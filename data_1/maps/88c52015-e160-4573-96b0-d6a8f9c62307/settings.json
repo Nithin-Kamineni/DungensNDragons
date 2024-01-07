@@ -1,0 +1,13 @@
+{
+  "id": "88c52015-e160-4573-96b0-d6a8f9c62307",
+  "title": "onePiece(Ext)",
+  "fogProgressPath": null,
+  "fogLivePath": null,
+  "mapPath": "map.jpg",
+  "grid": null,
+  "showGrid": false,
+  "showGridToPlayers": false,
+  "tokens": [],
+  "fogProgressRevision": "4d438966-a6a9-48bc-b3d1-2721290fd913",
+  "fogLiveRevision": "f7ce756c-f4e5-4aba-bb16-3081e9ec7a52"
+}

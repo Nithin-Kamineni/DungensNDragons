@@ -1,0 +1,13 @@
+{
+  "id": "c220e405-aac1-4090-a43d-3137da3b027d",
+  "title": "maloMoon(Ext)",
+  "fogProgressPath": "fog.progress.png",
+  "fogLivePath": "fog.live.png",
+  "mapPath": "map.jpg",
+  "grid": null,
+  "showGrid": false,
+  "showGridToPlayers": false,
+  "tokens": [],
+  "fogProgressRevision": "195ef74d-78c6-461b-840f-f2cdd9a926db",
+  "fogLiveRevision": "2700e709-a8c6-4c01-917d-bbac1300b85d"
+}

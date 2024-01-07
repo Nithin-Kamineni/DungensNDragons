@@ -1,0 +1,13 @@
+{
+  "id": "f42f7284-89e4-4820-a419-bac0a89bd405",
+  "title": "Sword-Coast-Map_HighRes(Ext)",
+  "fogProgressPath": null,
+  "fogLivePath": null,
+  "mapPath": "map.jpg",
+  "grid": null,
+  "showGrid": false,
+  "showGridToPlayers": false,
+  "tokens": [],
+  "fogProgressRevision": "f2c9d056-079c-43e4-9215-7c4c4295431e",
+  "fogLiveRevision": "998790dd-0361-4a47-b293-114cc31893f3"
+}

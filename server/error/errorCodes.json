@@ -1,0 +1,16 @@
+{
+    "DB": {
+      "UNKNOWN": "E000",
+      "JOI_VALIDATION_ERROR": "E001",
+      "DATA_INTEGRITY_VIOLATION": "E002",
+      "ENTITY_NOT_FOUND": "E003"
+    },
+    "API": {
+      "UNAUTHORIZED": "E100",
+      "USER_NOT_REGISTERED": "E101",
+      "OPEN_API_AUTHENTICATION_ERROR": "E102",
+      "AUTH0_TOKEN_NOT_FOUND": "E103",
+      "REQUIRED_FIELDS_NOT_FOUND": "E104"
+    }
+  }
+  

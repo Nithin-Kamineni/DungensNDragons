@@ -1,0 +1,13 @@
+{
+  "id": "fd225287-3133-4558-957d-1620d0eafb76",
+  "title": "Screenshot 2023-10-19 193204",
+  "mapPath": "map.png",
+  "fogProgressPath": "fog.progress.png",
+  "fogLivePath": "fog.live.png",
+  "showGrid": false,
+  "showGridToPlayers": false,
+  "grid": null,
+  "tokens": [],
+  "fogProgressRevision": "81ccc35e-ab3a-4a4a-a5fb-3720c5d5852a",
+  "fogLiveRevision": "6249cc89-38e9-4645-a2d6-6a9e630cca7d"
+}

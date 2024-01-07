@@ -1,0 +1,814 @@
+### THIS FILE IS AUTO GENERATED
+
+"""
+Instruction for establishing a live connection that is updated once the underlying data changes.
+"""
+directive @live(
+  """
+  Whether the query should be live or not.
+  """
+  if: Boolean = true
+
+  """
+  Propose a desired throttle interval ot the server in order to receive updates to at most once per "throttle" milliseconds. The server must not accept this value.
+  """
+  throttle: Int
+) on QUERY
+
+type DiceRollOperatorNode implements DiceRollDetail {
+  content: String!
+}
+
+interface DiceRollDetail {
+  content: String!
+}
+
+type DiceRollConstantNode implements DiceRollDetail {
+  content: String!
+}
+
+type DiceRollDiceRollNode implements DiceRollDetail {
+  content: String!
+  min: Float!
+  max: Float!
+  rollResults: [DiceRollResult!]!
+}
+
+type DiceRollResult {
+  dice: String!
+  result: Float!
+  category: DiceRollCategory!
+  crossedOut: Boolean!
+}
+
+enum DiceRollCategory {
+  DEFAULT
+  MAX
+  MIN
+}
+
+type DiceRollOpenParenNode implements DiceRollDetail {
+  content: String!
+}
+
+type DiceRollCloseParenNode implements DiceRollDetail {
+  content: String!
+}
+
+"""
+A chat message
+"""
+type UserChatMessage implements ChatMessage & TextChatMessage {
+  id: ID!
+  authorName: String!
+  content: String!
+  diceRolls: [DiceRoll!]!
+  referencedDiceRolls: [DiceRoll!]!
+  createdAt: String!
+  containsDiceRoll: Boolean!
+}
+
+interface ChatMessage {
+  id: ID!
+}
+
+interface TextChatMessage implements ChatMessage {
+  id: ID!
+  content: String!
+  createdAt: String!
+  containsDiceRoll: Boolean!
+}
+
+type DiceRoll {
+  result: Float!
+  detail: [DiceRollDetail!]!
+  rollId: String!
+}
+
+type OperationalChatMessage implements ChatMessage & TextChatMessage {
+  id: ID!
+  content: String!
+  createdAt: String!
+  containsDiceRoll: Boolean!
+}
+
+type SharedResourceChatMessage implements ChatMessage {
+  id: ID!
+  authorName: String!
+  resource: SharedResource
+}
+
+union SharedResource = Note | Image
+
+type Note implements Node {
+  id: ID!
+  documentId: ID!
+  title: String!
+  content: String!
+  contentPreview: String!
+  createdAt: Int!
+  viewerCanEdit: Boolean!
+  viewerCanShare: Boolean!
+  access: String!
+  isEntryPoint: Boolean!
+  updatedAt: Int!
+}
+
+interface Node {
+  id: ID!
+}
+
+type Image implements Node {
+  id: ID!
+  imageId: ID!
+  url: String!
+}
+
+type Query {
+  chat(first: Int, after: ID): ChatMessageConnection!
+  sharedSplashImage: Image
+  users(first: Int, after: ID): ConnectedUserConnection!
+  usersCount: Int!
+  me: User!
+  notes(first: Int, after: String, filter: NotesFilter): NoteConnection!
+  notesSearch(first: Int, after: String, query: String): NoteSearchConnection!
+  note(documentId: ID!): Note
+  tokenImages(
+    first: Int
+    after: String
+    sourceImageSha256: String
+    titleFilter: String
+  ): TokenImageConnection
+
+  """
+  A connection of all available maps within the library
+  """
+  maps(
+    """
+    The amount of items to fetch.
+    """
+    first: Int
+
+    """
+    Cursor after which items should be fetched.
+    """
+    after: String
+
+    """
+    Needle for filtering the items.
+    """
+    titleNeedle: String
+  ): MapsConnection!
+
+  """
+  The active map that is shared with the players.
+  """
+  activeMap: Map
+
+  """
+  Get a map by id.
+  """
+  map(id: ID!): Map
+  node(id: ID!): Node
+}
+
+type ChatMessageConnection {
+  edges: [ChatMessageEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ChatMessageEdge {
+  cursor: String!
+  node: ChatMessage!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String!
+  endCursor: String!
+}
+
+type ConnectedUserConnection {
+  edges: [ConnectedUserEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ConnectedUserEdge {
+  cursor: String!
+  node: User!
+}
+
+type User {
+  id: ID!
+  name: String!
+}
+
+type NoteConnection {
+  edges: [NoteEdge!]!
+  pageInfo: PageInfo!
+}
+
+type NoteEdge {
+  cursor: String!
+  node: Note!
+}
+
+"""
+A filter that can be applied to the paginated notes.
+"""
+enum NotesFilter {
+  """
+  Only return notes that are marked as entrypoints.
+  """
+  Entrypoint
+
+  """
+  Return all notes.
+  """
+  All
+}
+
+type NoteSearchConnection {
+  pageInfo: PageInfo
+  edges: [NoteSearchEdgeType!]!
+}
+
+type NoteSearchEdgeType {
+  cursor: String!
+  node: NoteSearchResultType!
+}
+
+type NoteSearchResultType {
+  noteId: ID!
+  documentId: ID!
+  title: String!
+  preview: String!
+}
+
+type TokenImageConnection {
+  edges: [TokenImageEdge!]!
+  pageInfo: PageInfo!
+}
+
+type TokenImageEdge {
+  cursor: String!
+  node: TokenImage!
+}
+
+"""
+A entity that can be attached to an image.
+"""
+type TokenImage implements Node {
+  id: ID!
+  title: String!
+  url: String!
+}
+
+"""
+A connection of maps.
+"""
+type MapsConnection {
+  edges: [MapEdge!]!
+  pageInfo: PageInfo!
+}
+
+type MapEdge {
+  cursor: String!
+  node: Map!
+}
+
+"""
+A map entity.
+"""
+type Map {
+  """
+  The unique ID of a map.
+  """
+  id: ID!
+
+  """
+  The title of the map.
+  """
+  title: String!
+
+  """
+  The URL of the map image.
+  """
+  mapImageUrl: String!
+
+  """
+  The URL of the fog progress image that is only accessible to the DM.
+  """
+  fogProgressImageUrl: String
+
+  """
+  The URL of the fog live image, that is shown to players.
+  """
+  fogLiveImageUrl: String
+
+  """
+  The grid of the map. Is 'null' if no grid has been configured.
+  """
+  grid: MapGrid
+  showGrid: Boolean!
+  showGridToPlayers: Boolean!
+  tokens: [MapToken!]!
+}
+
+type MapGrid {
+  color: String!
+  offsetX: Float!
+  offsetY: Float!
+  columnWidth: Float!
+  columnHeight: Float!
+}
+
+"""
+A token on the map.
+"""
+type MapToken {
+  id: ID!
+  x: Float!
+  y: Float!
+  rotation: Float!
+  radius: Float!
+  color: String!
+  label: String!
+  isVisibleForPlayers: Boolean!
+  isMovableByPlayers: Boolean!
+  isLocked: Boolean!
+  tokenImage: TokenImage
+  referenceId: ID
+}
+
+type Mutation {
+  logIn(input: LogInInput): LogInResult!
+  changeName(input: ChangeNameInput!): ChangeNameResult!
+  chatMessageCreate(input: ChatMessageCreateInput!): ChatMessageCreateResult!
+  shareResource(input: ShareResourceInput!): Boolean
+  shareImage(input: ShareImageInput!): Boolean
+  splashShareImage(input: SplashShareImageInput!): Boolean
+  noteCreate(input: NoteCreateInput!): NoteCreateResult!
+  noteDelete(input: NoteDeleteInput!): NoteDeleteResult!
+  noteUpdateContent(input: NoteUpdateContentInput!): NoteUpdateResult!
+  noteUpdateTitle(input: NoteUpdateTitleInput!): NoteUpdateResult!
+  noteUpdateAccess(input: NoteUpdateAccessInput!): NoteUpdateResult!
+  noteUpdateIsEntryPoint(input: NoteUpdateIsEntryPointInput!): NoteUpdateResult!
+  requestTokenImageUpload(
+    input: RequestTokenImageUploadInput!
+  ): RequestImageTokenUploadResult!
+  tokenImageCreate(input: TokenImageCreateInput!): TokenImageCreateResult!
+  mapTokenUpdateMany(input: MapTokenUpdateManyInput!): Boolean
+  mapTokenRemoveMany(input: MapTokenRemoveManyInput!): Boolean
+
+  """
+  Add token to a map
+  """
+  mapTokenAddMany(input: MapTokenAddManyInput!): Boolean
+
+  """
+  Request the upload of a token image.
+  """
+  mapImageRequestUpload(
+    input: MapImageRequestUploadInput!
+  ): MapImageRequestUploadResult!
+
+  """
+  Create a new map.
+  """
+  mapCreate(input: MapCreateInput!): MapCreateResult!
+
+  """
+  Delete a map.
+  """
+  mapDelete(input: MapDeleteInput!): Boolean!
+
+  """
+  Update the title of a map.
+  """
+  mapUpdateTitle(input: MapUpdateTitleInput!): MapUpdateTitleResult!
+
+  """
+  Update the grid of a map.
+  """
+  mapUpdateGrid(input: MapUpdateGridInput!): MapUpdateGridResult!
+
+  """
+  Ping a point on the map.
+  """
+  mapPing(input: MapPingInput!): Boolean
+
+  """
+  Send the DM's current position and scale to the players.
+  """
+  mapMove(input: MapMoveInput!): Boolean
+}
+
+type LogInResult {
+  user: User!
+}
+
+input LogInInput {
+  id: String!
+  name: String!
+}
+
+type ChangeNameResult {
+  me: User!
+}
+
+input ChangeNameInput {
+  name: String!
+}
+
+type ChatMessageCreateResult {
+  error: ChatMessageCreateResultError
+  success: ChatMessageCreateResultSuccess
+}
+
+type ChatMessageCreateResultError {
+  reason: String!
+}
+
+type ChatMessageCreateResultSuccess {
+  _: Boolean
+}
+
+input ChatMessageCreateInput {
+  rawContent: String!
+  variables: String
+}
+
+input ShareResourceInput {
+  contentId: ID!
+}
+
+input ShareImageInput {
+  imageId: ID!
+}
+
+input SplashShareImageInput {
+  imageId: ID
+}
+
+type NoteCreateResult {
+  note: Note!
+}
+
+input NoteCreateInput {
+  title: String!
+  content: String!
+  isEntryPoint: Boolean!
+}
+
+type NoteDeleteResult {
+  success: Boolean!
+  deletedNoteId: ID!
+}
+
+input NoteDeleteInput {
+  noteId: String!
+}
+
+type NoteUpdateResult {
+  note: Note
+}
+
+input NoteUpdateContentInput {
+  id: String!
+  content: String!
+}
+
+input NoteUpdateTitleInput {
+  id: String!
+  title: String!
+}
+
+input NoteUpdateAccessInput {
+  id: String!
+  access: String!
+}
+
+input NoteUpdateIsEntryPointInput {
+  id: String!
+  isEntryPoint: Boolean!
+}
+
+union RequestImageTokenUploadResult =
+    RequestTokenImageUploadDuplicate
+  | RequestTokenImageUploadUrl
+
+"""
+A image with the given SHA-256 does already exist.
+"""
+type RequestTokenImageUploadDuplicate {
+  """
+  The TokenImage that already exists for the given hash.
+  """
+  tokenImage: TokenImage!
+}
+
+type RequestTokenImageUploadUrl {
+  uploadUrl: String!
+}
+
+input RequestTokenImageUploadInput {
+  """
+  The SHA256 of the file that is going to be uploaded in hexadecimal form.
+  """
+  sha256: String!
+
+  """
+  The extension of the file thats is going to be uploaded.
+  """
+  extension: String!
+}
+
+union TokenImageCreateResult = TokenImageCreateSuccess | TokenImageCreateError
+
+type TokenImageCreateSuccess {
+  createdTokenImage: TokenImage!
+}
+
+type TokenImageCreateError {
+  reason: String!
+}
+
+input TokenImageCreateInput {
+  """
+  The title of the token image.
+  """
+  title: String!
+
+  """
+  The SHA256 of the file that has been uploaded in hexadecimal form.
+  """
+  sha256: String!
+
+  """
+  The SHA256 of the file the image got cut out from in hexadecimal form.
+  """
+  sourceSha256: String
+}
+
+input MapTokenUpdateManyInput {
+  """
+  The id of the map the token belong to.
+  """
+  mapId: ID!
+
+  """
+  The token ids that should be updated.
+  """
+  tokenIds: [ID!]!
+
+  """
+  The properties that should be updated on the affected tokens.
+  """
+  properties: MapTokenUpdateManyPropertiesInput!
+}
+
+"""
+The properties on the tokens that should be updated. Properties that are not provided will remain untouched.
+"""
+input MapTokenUpdateManyPropertiesInput {
+  """
+  Color to be updated. Will not be updated if null is provided.
+  """
+  color: String
+
+  """
+  Color to be updated. Will not be updated if null is provided.
+  """
+  isVisibleForPlayers: Boolean
+
+  """
+  Color to be updated. Will not be updated if null is provided.
+  """
+  isMovableByPlayers: Boolean
+
+  """
+  Token image id to be updated. Will be updated if null is provided.
+  """
+  tokenImageId: ID
+
+  """
+  Rotation to be updated. Will not be updated if null is provided.
+  """
+  rotation: Float
+}
+
+input MapTokenRemoveManyInput {
+  """
+  The id of the map the token belong to.
+  """
+  mapId: ID!
+
+  """
+  The ids of the token that should be removed.
+  """
+  tokenIds: [ID!]!
+}
+
+input MapTokenAddManyInput {
+  mapId: ID!
+  tokens: [MapTokenAddManyTokenInput!]!
+}
+
+input MapTokenAddManyTokenInput {
+  x: Float!
+  y: Float!
+  color: String!
+  label: String!
+  radius: Float
+  rotation: Float
+  isVisibleForPlayers: Boolean
+  isMovableByPlayers: Boolean
+  isLocked: Boolean
+  tokenImageId: ID
+}
+
+type MapImageRequestUploadResult {
+  """
+  The id of the map image upload request.
+  """
+  id: ID!
+
+  """
+  The URL that should be used for uploading the image
+  """
+  uploadUrl: String!
+}
+
+input MapImageRequestUploadInput {
+  """
+  The SHA256 of the file that is going to be uploaded in hexadecimal form.
+  """
+  sha256: String!
+
+  """
+  The extension of the file thats is going to be uploaded.
+  """
+  extension: String!
+}
+
+union MapCreateResult = MapCreateError | MapCreateSuccess
+
+type MapCreateError {
+  """
+  The reason on why the map creation failed.
+  """
+  reason: String
+}
+
+type MapCreateSuccess {
+  createdMap: Map!
+}
+
+input MapCreateInput {
+  """
+  The id of the map upload request received via 'Mutation.mapImageRequestUpload'.
+  """
+  mapImageUploadId: ID!
+  title: String!
+}
+
+input MapDeleteInput {
+  """
+  The id of the map that should be deleted.
+  """
+  mapId: String!
+}
+
+type MapUpdateTitleResult {
+  updatedMap: Map!
+}
+
+input MapUpdateTitleInput {
+  mapId: ID!
+  newTitle: String!
+}
+
+type MapUpdateGridResult {
+  updatedMap: Map!
+}
+
+input MapUpdateGridInput {
+  mapId: ID!
+  grid: GridInput!
+  showGrid: Boolean!
+  showGridToPlayers: Boolean!
+}
+
+input GridInput {
+  color: String!
+  offsetX: Float!
+  offsetY: Float!
+  columnWidth: Float!
+  columnHeight: Float!
+}
+
+input MapPingInput {
+  mapId: ID!
+  x: Float!
+  y: Float!
+}
+
+input MapPositionInput {
+  x: Float!
+  y: Float!
+}
+
+input MapMoveInput {
+  mapId: ID!
+  scale: Float!
+  position: MapPositionInput!
+}
+
+type Subscription {
+  userUpdate: UserUpdateSubscription!
+  chatMessagesAdded: ChatMessagesAddedSubscription!
+  notesUpdates(
+    filter: NotesFilter
+    endCursor: String!
+    hasNextPage: Boolean!
+  ): NotesUpdates!
+  mapPing(mapId: ID!): MapPing!
+  mapMove(mapId: ID!): MapMove!
+}
+
+union UserUpdateSubscription =
+    UserAddUpdate
+  | UserRemoveUpdate
+  | UserChangeUpdate
+
+type UserAddUpdate {
+  user: User!
+  usersCount: Int!
+}
+
+type UserRemoveUpdate {
+  userId: ID!
+  usersCount: Int!
+}
+
+type UserChangeUpdate {
+  user: User!
+}
+
+type ChatMessagesAddedSubscription {
+  messages: [ChatMessage!]!
+}
+
+"""
+Describes update instructions for the NoteConnection type.
+"""
+type NotesUpdates {
+  """
+  A node that was added to the connection.
+  """
+  addedNode: NotesConnectionEdgeInsertionUpdate
+
+  """
+  A note that was updated.
+  """
+  updatedNote: Note
+
+  """
+  A note that was removed.
+  """
+  removedNoteId: ID
+}
+
+"""
+Describes where a edge should be inserted inside a NotesConnection.
+"""
+type NotesConnectionEdgeInsertionUpdate {
+  """
+  The cursor of the item before which the node should be inserted.
+  """
+  previousCursor: String
+
+  """
+  The edge that should be inserted.
+  """
+  edge: NoteEdge
+}
+
+type MapPing {
+  id: ID!
+  x: Float!
+  y: Float!
+}
+
+type MapPosition {
+  x: Float!
+  y: Float!
+}
+
+type MapMove {
+  id: ID!
+  scale: Float!
+  position: MapPosition!
+}

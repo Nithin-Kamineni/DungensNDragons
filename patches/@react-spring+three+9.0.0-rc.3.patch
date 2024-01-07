@@ -1,0 +1,23 @@
+diff --git a/node_modules/@react-spring/three/index.d.ts b/node_modules/@react-spring/three/index.d.ts
+index 4546043..dabe4d3 100644
+--- a/node_modules/@react-spring/three/index.d.ts
++++ b/node_modules/@react-spring/three/index.d.ts
+@@ -1,5 +1,6 @@
+ import { ForwardRefExoticComponent, CSSProperties, FC } from 'react';
+ import { ElementType, ComponentPropsWithRef, AssignableKeys, FluidValue } from '@react-spring/shared';
++import { SpringValue, Interpolation } from '@react-spring/core';
+ export * from '@react-spring/core';
+ 
+ declare type Primitives = keyof JSX.IntrinsicElements;
+@@ -17,7 +18,10 @@ declare type AnimatedComponent<T extends ElementType> = ForwardRefExoticComponen
+ declare type AnimatedProps<Props extends object> = {
+     [P in keyof Props]: P extends 'ref' | 'key' ? Props[P] : AnimatedProp<Props[P]>;
+ };
+-declare type AnimatedProp<T> = [T, T] extends [infer T, infer DT] ? [DT] extends [never] ? never : DT extends void ? undefined : DT extends object ? [AssignableKeys<DT, CSSProperties>] extends [never] ? DT extends ReadonlyArray<any> ? AnimatedStyles<DT> : DT : AnimatedStyle<T> : DT | AnimatedLeaf<T> : never;
++type ThreeProp = THREE.Vector3 | [number, number, number] | [any, any, any] | undefined
++type AnimatedThreeProp = ThreeProp | SpringValue<[number, number, number]> | Interpolation<[number, number, number]> 
++
++declare type AnimatedProp<T> = [T, T] extends [infer T, infer DT] ? [DT] extends [never] ? never : DT extends void ? undefined : DT extends ThreeProp ? AnimatedThreeProp : DT extends object ? [AssignableKeys<DT, CSSProperties>] extends [never] ? DT extends ReadonlyArray<any> ? AnimatedStyles<DT> : DT : AnimatedStyle<T> : DT | AnimatedLeaf<T> : never;
+ declare type AnimatedStyles<T extends ReadonlyArray<any>> = {
+     [P in keyof T]: [T[P]] extends [infer DT] ? DT extends object ? [AssignableKeys<DT, CSSProperties>] extends [never] ? DT extends ReadonlyArray<any> ? AnimatedStyles<DT> : DT : {
+         [P in keyof DT]: AnimatedProp<DT[P]>;

@@ -1,0 +1,13 @@
+{
+  "id": "2e1b301e-2406-4672-8495-26634c2eafd1",
+  "title": "allTerrain(Ext)",
+  "mapPath": "map.jpg",
+  "fogProgressPath": "fog.progress.png",
+  "fogLivePath": "fog.live.png",
+  "showGrid": false,
+  "showGridToPlayers": false,
+  "grid": null,
+  "tokens": [],
+  "fogProgressRevision": "b07c55aa-3c6f-4b2e-83ee-e39bb8fb5d49",
+  "fogLiveRevision": "e0752041-aab3-4382-a008-a8ff6c664e29"
+}
