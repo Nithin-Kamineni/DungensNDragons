@@ -6,6 +6,8 @@ type MarkAreaToolContextValue = {
   onMarkArea: (point: [number, number]) => void;
 };
 
+// import { TokenMarkerContext } from "./token-marker-map-tool";
+
 export const MarkAreaToolContext =
   React.createContext<MarkAreaToolContextValue>(
     // TODO: use context that throws if no value is provided
@@ -15,7 +17,11 @@ export const MarkAreaToolContext =
 export const MarkAreaMapTool: MapTool = {
   id: "mark-area-map-tool",
   Component: (props) => {
+    
     const markAreaContext = React.useContext(MarkAreaToolContext);
+
+    // const tokenMarkerContext = React.useContext(TokenMarkerContext);
+    // console.log("444",tokenMarkerContext.state.tokenText)
     usePinchWheelZoom(props.mapContext);
     props.useMapGesture({
       onDrag: ({ movement, memo, event, tap }) => {

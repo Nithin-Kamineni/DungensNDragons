@@ -36,6 +36,7 @@ type TokenMarkerContextValue = {
   state: TokenMarkerState;
   setState: React.Dispatch<React.SetStateAction<TokenMarkerState>>;
   currentMapId: string;
+  setActiveToolId: any;
 };
 
 export const TokenMarkerContext = React.createContext<TokenMarkerContextValue>(
@@ -108,6 +109,9 @@ export const TokenMarkerMapTool: MapTool = {
     usePinchWheelZoom(props.mapContext);
     const tokenMarkerContext = React.useContext(TokenMarkerContext);
 
+    // tokenMarkerContext.state.tokenText = "wsdfs"
+    // console.log("1234444",tokenMarkerContext.state.tokenText)
+
     const [addToken] =
       useMutation<tokenMarkerMapToolMapTokeMapTokenAddManyMutation>(
         TokenMarkerMapToolMapTokenAddManyMutation
@@ -140,6 +144,7 @@ export const TokenMarkerMapTool: MapTool = {
           ]);
 
           let label = "";
+
 
           if (tokenMarkerContext.state.includeTokenText) {
             label = tokenMarkerContext.state.tokenText;

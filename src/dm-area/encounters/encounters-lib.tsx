@@ -52,119 +52,152 @@ import { ThemedLevaPanel } from "../../themed-leva-panel";
 ////
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 
+import * as io from "io-ts";
+import * as E from "fp-ts/Either";
+import { pipe, identity } from "fp-ts/function";
+import { DragPanZoomMapTool } from "../../map-tools/drag-pan-zoom-map-tool";
+import {
+  MarkAreaMapTool,
+  MarkAreaToolContext,
+} from "../../map-tools/mark-area-map-tool";
+import {
+  BrushMapTool,
+  BrushToolContext,
+  BrushToolContextProvider,
+} from "../../map-tools/brush-map-tool";
+import {
+  PersistedStateModel,
+  usePersistedState,
+} from "../../hooks/use-persisted-state";
+import {
+  AreaSelectContext,
+  AreaSelectContextProvider,
+  AreaSelectMapTool,
+} from "../../map-tools/area-select-map-tool";
+import { RulerMapTool } from "../../map-tools/ruler-map-tool";
+
 const CustomizedBreadcrumbSeparator = () => {
   return <div>&gt;</div>;
 };
 
-const TokenMarkerSettings = (): React.ReactElement => {
+const TokenMarkerSettings = (props:{setActiveToolId: any}): React.ReactElement => {
   const tokenMarkerContext = React.useContext(TokenMarkerContext);
-  const configureGridContext = React.useContext(ConfigureGridMapToolContext);
-
-  const updateRadiusRef = React.useRef<null | ((radius: number) => void)>(null);
-
-  const store = useCreateStore();
+  // const configureGridContext = React.useContext(ConfigureGridMapToolContext);
   
-  const [, set] = useControls(
-    () => ({
-      radius: {
-        type: LevaInputs.NUMBER,
-        label: "Size",
-        value: tokenMarkerContext.state.tokenRadius.get(),
-        step: 1,
-        onChange: (value) => {
-          tokenMarkerContext.state.tokenRadius.set(value);
-        },
-      },
-      radiusShortcuts: buttonGroup({
-        label: null,
-        opts: {
-          "0.25x": () => updateRadiusRef.current?.(0.25),
-          "0.5x": () => updateRadiusRef.current?.(0.5),
-          "1x": () => updateRadiusRef.current?.(1),
-          "2x": () => updateRadiusRef.current?.(2),
-          "3x": () => updateRadiusRef.current?.(3),
-        },
-      }),
-      color: {
-        type: LevaInputs.COLOR,
-        label: "Color",
-        value: tokenMarkerContext.state.tokenColor ?? "rgb(255, 255, 255)",
-        onChange: (color: string) => {
-          tokenMarkerContext.setState((state) => ({
-            ...state,
-            tokenColor: color,
-          }));
-        },
-      },
-      label: {
-        type: LevaInputs.STRING,
-        label: "Label",
-        value: tokenMarkerContext.state.tokenText,
-        optional: true,
-        disabled: !tokenMarkerContext.state.includeTokenText,
-        onChange: (tokenText, _, { initial, disabled, fromPanel }) => {
-          if (initial || !fromPanel) {
-            return;
-          }
+  const testFunc = () => {
+    props.setActiveToolId('token-marker-map-tool')
+    console.log("testAns:");
+  }
+  
 
-          tokenMarkerContext.setState((state) => ({
-            ...state,
-            includeTokenText: !disabled,
-            tokenText: tokenText ?? state.tokenText,
-          }));
-        },
-      },
-      counter: {
-        type: LevaInputs.NUMBER,
-        label: "Counter",
-        step: 1,
-        min: 0,
-        value: tokenMarkerContext.state.tokenCounter,
-        optional: true,
-        disabled: !tokenMarkerContext.state.includeTokenCounter,
-        onChange: (tokenCounter, _, { initial, disabled, fromPanel }) => {
-          if (initial || !fromPanel) {
-            return;
-          }
+  // const updateRadiusRef = React.useRef<null | ((radius: number) => void)>(null);
 
-          tokenMarkerContext.setState((state) => ({
-            ...state,
-            includeTokenCounter: !disabled,
-            tokenCounter: tokenCounter ?? state.tokenCounter,
-          }));
-        },
-      },
-    }),
-    { store },
-    [tokenMarkerContext.state]
-  );
+  // const store = useCreateStore();
+  
+  // const [, set] = useControls(
+  //   () => ({
+  //     radius: {
+  //       type: LevaInputs.NUMBER,
+  //       label: "Size",
+  //       value: tokenMarkerContext.state.tokenRadius.get(),
+  //       step: 1,
+  //       onChange: (value) => {
+  //         tokenMarkerContext.state.tokenRadius.set(value);
+  //       },
+  //     },
+  //     radiusShortcuts: buttonGroup({
+  //       label: null,
+  //       opts: {
+  //         "0.25x": () => updateRadiusRef.current?.(0.25),
+  //         "0.5x": () => updateRadiusRef.current?.(0.5),
+  //         "1x": () => updateRadiusRef.current?.(1),
+  //         "2x": () => updateRadiusRef.current?.(2),
+  //         "3x": () => updateRadiusRef.current?.(3),
+  //       },
+  //     }),
+  //     color: {
+  //       type: LevaInputs.COLOR,
+  //       label: "Color",
+  //       value: tokenMarkerContext.state.tokenColor ?? "rgb(255, 255, 255)",
+  //       onChange: (color: string) => {
+  //         tokenMarkerContext.setState((state) => ({
+  //           ...state,
+  //           tokenColor: color,
+  //         }));
+  //       },
+  //     },
+  //     label: {
+  //       type: LevaInputs.STRING,
+  //       label: "Label",
+  //       value: tokenMarkerContext.state.tokenText,
+  //       optional: true,
+  //       disabled: !tokenMarkerContext.state.includeTokenText,
+  //       onChange: (tokenText, _, { initial, disabled, fromPanel }) => {
+  //         if (initial || !fromPanel) {
+  //           return;
+  //         }
 
-  React.useEffect(() => {
-    updateRadiusRef.current = (factor) => {
-      tokenMarkerContext.state.tokenRadius.set(
-        (configureGridContext.state.columnWidth / 2) * factor * 0.9
-      );
-      set({
-        radius: tokenMarkerContext.state.tokenRadius.get(),
-      });
-    };
-  });
+  //         tokenMarkerContext.setState((state) => ({
+  //           ...state,
+  //           includeTokenText: !disabled,
+  //           tokenText: tokenText ?? state.tokenText,
+  //         }));
+  //       },
+  //     },
+  //     counter: {
+  //       type: LevaInputs.NUMBER,
+  //       label: "Counter",
+  //       step: 1,
+  //       min: 0,
+  //       value: tokenMarkerContext.state.tokenCounter,
+  //       optional: true,
+  //       disabled: !tokenMarkerContext.state.includeTokenCounter,
+  //       onChange: (tokenCounter, _, { initial, disabled, fromPanel }) => {
+  //         if (initial || !fromPanel) {
+  //           return;
+  //         }
+
+  //         tokenMarkerContext.setState((state) => ({
+  //           ...state,
+  //           includeTokenCounter: !disabled,
+  //           tokenCounter: tokenCounter ?? state.tokenCounter,
+  //         }));
+  //       },
+  //     },
+  //   }),
+  //   { store },
+  //   [tokenMarkerContext.state]
+  // );
+
+  // React.useEffect(() => {
+  //   updateRadiusRef.current = (factor) => {
+  //     tokenMarkerContext.state.tokenRadius.set(
+  //       (configureGridContext.state.columnWidth / 2) * factor * 0.9
+  //     );
+  //     set({
+  //       radius: tokenMarkerContext.state.tokenRadius.get(),
+  //     });
+  //   };
+  // });
 
   return (
     <>
-      <ThemedLevaPanel
+    wdwdwdw
+    <Button onClick={testFunc}>test Btn</Button>
+      {/* <ThemedLevaPanel
         fill={true}
         titleBar={false}
         store={store}
         oneLineLabels
         hideCopyButton
-      />
+      /> */}
     </>
   );
 };
 
 type MediaLibraryProps = {
   onClose: () => void;
+  setActiveToolId: any;
 };
 
 type MediaLibraryItem = {
@@ -281,11 +314,17 @@ interface City {
   code: string;
 }
 
-export const Encounter: React.FC<MediaLibraryProps> = ({ onClose }) => {
+export const Encounter: React.FC<MediaLibraryProps> = ({ onClose, setActiveToolId }) => {
   const [state, dispatch] = React.useReducer(stateReducer, initialState);
   const getIsMounted = useGetIsMounted();
   const accessToken = useAccessToken();
 
+  const tokenMarkerContext = React.useContext(TokenMarkerContext);
+  // tokenMarkerContext.state.includeTokenText.set(true);
+  // tokenMarkerContext.state.tokenRadius.set(10)
+  // tokenMarkerContext.state.tokenText="Hello"
+
+  // console.log("2324",tokenMarkerContext.state);
   useAsyncEffect(function* (onCancel, cast) {
     const task = sendRequest({
       method: "GET",
@@ -399,6 +438,16 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose }) => {
       console.log(selectedCities);
     },[selectedCities])
 
+    const testFunc = () => {
+      setActiveToolId('token-marker-map-tool')
+      console.log("testAns:");
+    }
+
+    const testFunc2 = () => {
+      setActiveToolId('drag-pan-zoom-map-tool')
+      console.log("testAns2:");
+    }
+    
   return (
     <PrimeReactProvider 
     // value={{ unstyled: true }}
@@ -466,6 +515,9 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose }) => {
           {pagesLoaded==1 && <>
             <br/>
             <VStack>
+              <Button colorScheme='teal' size='xs' onClick={testFunc2}>
+                reset
+              </Button>
               {selectedCities.length>0 && 
                 <>
                 {selectedCities.map((cityObj)=>
@@ -473,7 +525,7 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose }) => {
                     <PinInput value="0" size='sm'>
                       <PinInputField />
                     </PinInput>
-                    <Button colorScheme='teal' size='xs'>
+                    <Button colorScheme='teal' size='xs' onClick={testFunc}>
                       {cityObj.name}
                     </Button>
                     <Popover>
@@ -486,7 +538,7 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose }) => {
                         <PopoverHeader>Edit <b>{cityObj.name}'s</b> Token</PopoverHeader>
                           {/* <PopoverBody>Are you sure you want to have that milkshake?</PopoverBody> */}
                         <PopoverBody>
-                          {/* <TokenMarkerSettings/> */}
+                          <TokenMarkerSettings setActiveToolId={setActiveToolId}/>
                         </PopoverBody>
                       </PopoverContent>
                     </Popover>

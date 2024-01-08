@@ -44,6 +44,63 @@ import PlayerStats from "./playerStats";
 import { DnDCharacterStatsSheet, DnDCharacterProfileSheet, DnDCharacterSpellSheet, DnDCharacter } from 'dnd-character-sheets'
 import EditOffIcon from '@mui/icons-material/EditOff';
 
+import {
+  PersistedStateModel
+} from "../hooks/use-persisted-state";
+import * as io from "io-ts";
+import * as E from "fp-ts/Either";
+import { pipe, identity } from "fp-ts/function";
+import { DragPanZoomMapTool } from "../map-tools/drag-pan-zoom-map-tool";
+import {
+  MarkAreaMapTool,
+  MarkAreaToolContext,
+} from "../map-tools/mark-area-map-tool";
+import {
+  BrushMapTool,
+  BrushToolContext,
+  BrushToolContextProvider,
+} from "../map-tools/brush-map-tool";
+import {
+  AreaSelectContext,
+  AreaSelectContextProvider,
+  AreaSelectMapTool,
+} from "../map-tools/area-select-map-tool";
+import {
+  TokenMarkerContext,
+  TokenMarkerContextProvider,
+  TokenMarkerMapTool,
+} from "../map-tools/token-marker-map-tool";
+import { RulerMapTool } from "../map-tools/ruler-map-tool";
+
+const ActiveDmMapToolModel = io.union([
+  io.literal(DragPanZoomMapTool.id),
+  io.literal(MarkAreaMapTool.id),
+  io.literal(BrushMapTool.id),
+  io.literal(AreaSelectMapTool.id),
+  io.literal(MarkAreaMapTool.id),
+  io.literal(TokenMarkerMapTool.id),
+  io.literal(RulerMapTool.id),
+]);
+
+const activeDmMapToolIdModel: PersistedStateModel<
+  io.TypeOf<typeof ActiveDmMapToolModel>
+> = {
+  encode: identity,
+  decode: (value) =>
+    pipe(
+      ActiveDmMapToolModel.decode(value),
+      E.fold((err) => {
+        if (value !== null) {
+          console.log(
+            "Error occurred while trying to decode value.\n" +
+              JSON.stringify(err, null, 2)
+          );
+        }
+        return DragPanZoomMapTool.id;
+      }, identity)
+    ),
+};
+
 interface IHash {
   [key: number]: any;
 }
@@ -478,6 +535,11 @@ const Content = ({
     return character
   }
 
+  const [activeToolId, setActiveToolId] = usePersistedState(
+    "activeDmTool",
+    activeDmMapToolIdModel
+  );
+
   return (
     <FetchContext.Provider value={localFetch}>
       {/* add bar */}
@@ -558,6 +620,7 @@ const Content = ({
           onClose={() => {
             setMode({ title: "EDIT_MAP" });
           }}
+          setActiveToolId={setActiveToolId}
         />
       ) : null}
 
@@ -709,6 +772,8 @@ const Content = ({
               saveFogProgress={saveFogProgress}
               hideMap={hideMap}
               showMapModal={showMapModal}
+              activeToolId={activeToolId}
+              setActiveToolId={setActiveToolId}
               openNotes={() => {
                 actions.showNoteInWindow(null, "note-editor", true);
               }}
@@ -720,6 +785,12 @@ const Content = ({
                 setMode({ title: "MEDIA_LIBRARY" });
               }}
               updateToken={updateToken}
+
+              // modetitle={mode.title}
+              // setActiveToolId={setActiveToolId}
+              // onClose={() => {
+              //   setMode({ title: "EDIT_MAP" });
+              // }}
             />
           </div>
           </LoadedMapDiv>

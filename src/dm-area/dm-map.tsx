@@ -20,7 +20,9 @@ import {
   NumberIncrementStepper,
   NumberDecrementStepper,
   useToast,
+  IconButton,
 } from "@chakra-ui/react";
+import { SearchIcon } from "@chakra-ui/icons";
 import {
   Popover,
   PopoverContent,
@@ -631,6 +633,8 @@ export const DmMap = (props: {
   openNotes: () => void;
   openEncounters: () => void;
   openMediaLibrary: () => void;
+  activeToolId: any;
+  setActiveToolId: any;
   sendLiveMap: (image: HTMLCanvasElement) => void;
   saveFogProgress: (image: HTMLCanvasElement) => void;
   updateToken: (
@@ -639,18 +643,29 @@ export const DmMap = (props: {
   ) => void;
   controlRef: React.MutableRefObject<MapControlInterface | null>;
 }): React.ReactElement => {
+
   const map = useFragment(DMMapFragment, props.map);
   const [mapPing] = useMutation<dmMap_MapPingMutation>(MapPingMutation);
   const controlRef = props.controlRef;
 
-  const [activeToolId, setActiveToolId] = usePersistedState(
-    "activeDmTool",
-    activeDmMapToolIdModel
-  );
+  // const [activeToolId, setActiveToolId] = usePersistedState(
+  //   "activeDmTool",
+  //   activeDmMapToolIdModel
+  // );
+  const [activeToolId, setActiveToolId] = [props.activeToolId, props.setActiveToolId]
+
+  // console.log("2324",tokenMarkerContext.state);
+  // tokenMarkerContext.setActiveToolId=activeToolId
+
+  
+  // tokenMarkerContext.setActiveToolId(setActiveToolId)
+
 
   const userSelectedTool = React.useMemo(() => {
-    return (dmTools.find((tool) => tool.tool.id === activeToolId) ?? dmTools[0])
-      .tool;
+    console.log("7777777777777777777777777777777777777777777777777777777")
+      console.log("userSelected a tool")
+      console.log("7777777777777777777777777777777777777777777777777777777")
+    return (dmTools.find((tool) => tool.tool.id === activeToolId) ?? dmTools[0]).tool;
   }, [activeToolId]);
 
   const [toolOverride, setToolOverride] = React.useState<null | MapTool>(null);
@@ -937,10 +952,7 @@ export const DmMap = (props: {
                 <Toolbar.Item isActive>
                 <Popover closeOnBlur={false}>
                   <PopoverTrigger>
-                    <Toolbar.Button
-                      // onClick={() =>
-                      // }
-                    >
+                    <Toolbar.Button>
                       <Icon.ChevronRight boxSize="20px" />
                       <Icon.Label>Locations</Icon.Label>
                     </Toolbar.Button>
@@ -948,6 +960,9 @@ export const DmMap = (props: {
                   
                   <PopoverContent>
                     Open Modal
+                    <IconButton aria-label='Search database' icon={< SearchIcon/>} onClick={()=>{
+                      console.log("ran this");
+                    }}/>
                   </PopoverContent>
                   </Popover>
                 </Toolbar.Item>
