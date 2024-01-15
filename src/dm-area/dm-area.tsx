@@ -4,7 +4,7 @@ import useAsyncEffect from "@n1ru4l/use-async-effect";
 import styled from "@emotion/styled/macro";
 import { Box, Center } from "@chakra-ui/react";
 import { commitMutation } from "relay-runtime";
-import { useQuery, useRelayEnvironment } from "relay-hooks";
+import { useQuery, useRelayEnvironment, useFragment } from "relay-hooks";
 import graphql from "babel-plugin-relay/macro";
 import { SelectMapModal } from "./select-map-modal";
 import { ImportFileModal } from "./import-file-modal";
@@ -71,6 +71,7 @@ import {
   TokenMarkerMapTool,
 } from "../map-tools/token-marker-map-tool";
 import { RulerMapTool } from "../map-tools/ruler-map-tool";
+import { UpdateTokenContext } from "../update-token-context";
 
 const ActiveDmMapToolModel = io.union([
   io.literal(DragPanZoomMapTool.id),
@@ -218,6 +219,23 @@ const DmArea_MapQuery = graphql`
     }
   }
 `;
+
+// const DMMapFragment = graphql`
+//   fragment dmMap_DMMapFragment on Map {
+//     id
+//     grid {
+//       color
+//       offsetX
+//       offsetY
+//       columnWidth
+//       columnHeight
+//     }
+//     ...mapView_MapFragment
+//     ...mapContextMenuRenderer_MapFragment
+//     ...dmMap_GridSettingButton_MapFragment
+//     ...dmMap_GridConfigurator_MapFragment
+//   }
+// `;
 
 const Content = ({
   socket,
@@ -540,6 +558,26 @@ const Content = ({
     activeDmMapToolIdModel
   );
 
+  (dmAreaResponse.error === null &&
+    // because it is a live query isLoading is always true
+    // thanks relay :D
+    // so we wanna show the map library if the data is loaded aka data is not undefined but data.map is undefined :D
+    dmAreaResponse.data &&
+    !dmAreaResponse.data.map)
+
+  let map=null;
+  if(dmAreaResponse.error === null &&
+    // because it is a live query isLoading is always true
+    // thanks relay :D
+    // so we wanna show the map library if the data is loaded aka data is not undefined but data.map is undefined :D
+    dmAreaResponse.data &&
+    !dmAreaResponse.data.map &&
+    dmAreaResponse.data.map!=undefined){
+  // map = useFragment(DMMapFragment, dmAreaResponse.data.map);
+  }
+
+  const [activeMapId, setActiveMapId] = React.useState(loadedMapId);
+
   return (
     <FetchContext.Provider value={localFetch}>
       {/* add bar */}
@@ -594,19 +632,22 @@ const Content = ({
         // so we wanna show the map library if the data is loaded aka data is not undefined but data.map is undefined :D
         dmAreaResponse.data &&
         !dmAreaResponse.data.map) ||
-      mode.title === "SHOW_MAP_LIBRARY" ? (
-        <SelectMapModal
-          canClose={dmAreaResponse.data?.map !== null}
-          loadedMapId={loadedMapId}
-          liveMapId={dmAreaResponse.data?.map?.id ?? null}
-          closeModal={() => {
-            setMode({ title: "EDIT_MAP" });
-          }}
-          setLoadedMapId={(loadedMapId) => {
-            setMode({ title: "EDIT_MAP" });
-            setLoadedMapId(loadedMapId);
-          }}
-        />
+      mode.title === "SHOW_MAP_LIBRARY" ? 
+      (
+          <SelectMapModal
+            canClose={dmAreaResponse.data?.map !== null}
+            loadedMapId={loadedMapId}
+            liveMapId={dmAreaResponse.data?.map?.id ?? null}
+            closeModal={() => {
+              setMode({ title: "EDIT_MAP" });
+            }}
+            setLoadedMapId={(loadedMapId) => {
+              setMode({ title: "EDIT_MAP" });
+              setLoadedMapId(loadedMapId);
+            }}
+            activeMapId={activeMapId}
+            setActiveMapId={setActiveMapId}
+          />
       ) : null}
       {mode.title === "MEDIA_LIBRARY" ? (
         <MediaLibrary
@@ -615,187 +656,198 @@ const Content = ({
           }}
         />
       ) : null}
-      {mode.title === "ENCOUNTER_LIBRARY" ? (
+      {/* {mode.title === "ENCOUNTER_LIBRARY" ? (
         <Encounter
           onClose={() => {
             setMode({ title: "EDIT_MAP" });
           }}
           setActiveToolId={setActiveToolId}
         />
-      ) : null}
+      ) : null} */}
 
       {dmAreaResponse.data?.map != null ? (
         <>
-        <LoadedMapDiv
-          onDragEnter={(ev) => {
-            if (isFileDrag(ev) === false) {
-              return;
-            }
-            ev.dataTransfer.dropEffect = "copy";
-            dragRef.current++;                                   // scale create based on number of tabs 1
-            setIsDraggingFile(dragRef.current !== 0);            // scale create based on number of tabs 1
-            ev.preventDefault();
-          }}
-          onDragLeave={(ev) => {
-            if (isFileDrag(ev) === false) {
-              return;
-            }
-            dragRef.current--;
-            setIsDraggingFile(dragRef.current !== 0);
-            ev.preventDefault();
-          }}
-          onDragOver={(ev) => {
-            if (isFileDrag(ev) === false) {
-              return;
-            }
-            ev.preventDefault();
-          }}
-          onDrop={(ev) => {
-            ev.preventDefault();
-            if (isFileDrag(ev) === false) {
-              return;
-            }
-            dragRef.current = 0;
-            setIsDraggingFile(dragRef.current !== 0);
-
-            const [file] = Array.from(ev.dataTransfer.files);
-
-            if (!file?.type.match(/image/)) {
-              return;
-            }
-            const context = controlRef.current?.getContext();   // scale by understanding
-
-            if (!context) {
-              return;
-            }
-            const coords = context.helper.coordinates.screenToImage([
-              ev.clientX,
-              ev.clientY,
-            ]);
-
-            const addTokenWithImageId = (tokenImageId: string) => {
-              commitMutation<dmAreaTokenAddManyMutation>(relayEnvironment, {
-                mutation: DmAreaTokenAddManyMutation,
-                variables: {
-                  input: {
-                    mapId: dmAreaResponse.data!.map!.id,
-                    tokens: [
-                      {
-                        color: "red",
-                        x: coords[0],
-                        y: coords[1],
-                        rotation: 0,
-                        isVisibleForPlayers: false,
-                        isMovableByPlayers: false,
-                        isLocked: false,
-                        tokenImageId,
-                        label: "",
-                      },
-                    ],
-                  },
-                },
-              });
-            };
-
-            selectFile(file, [], ({ tokenImageId }) => {
-              addTokenWithImageId(tokenImageId);
-            });
-          }}
-        >
-          {cropperNode}
-          {isDraggingFile ? (
-            <Center
-              position="absolute"
-              top="0"
-              width="100%"
-              zIndex={99999999}
-              justifyContent="center"
-            >
-              <DropZone
-                onDragEnter={(ev) => {
-                  if (isFileDrag(ev) === false) {
-                    return;
-                  }
-                  ev.dataTransfer.dropEffect = "copy";
-                  dragRef.current++;
-                  setIsDraggingFile(dragRef.current !== 0);
-                  ev.preventDefault();
-                }}
-                onDragLeave={(ev) => {
-                  if (isFileDrag(ev) === false) {
-                    return;
-                  }
-                  dragRef.current--;
-                  setIsDraggingFile(dragRef.current !== 0);
-                  ev.preventDefault();
-                }}
-                onDragOver={(ev) => {
-                  if (isFileDrag(ev) === false) {
-                    return;
-                  }
-                  ev.preventDefault();
-                }}
-                onDrop={(ev) => {
-                  ev.preventDefault();
-                  if (isFileDrag(ev) === false) {
-                    return;
-                  }
-
-                  dragRef.current = 0;
-                  setIsDraggingFile(dragRef.current !== 0);
-
-                  ev.stopPropagation();
-                  const [file] = Array.from(ev.dataTransfer.files);
-                  if (file) {
-                    setImportModalFile(file);
-                  }
-                }}
-              >
-                Import Map or Media Library Item
-              </DropZone>
-            </Center>
-          ) : null}
-          {/* </LoadedMapDiv> */}
-          <div
-            style={{
-              flex: 1,
-              // position: "relative",
-              overflow: "hidden",
+          <TokenMarkerContextProvider currentMapId={dmAreaResponse.data.map?.id}>
+            <UpdateTokenContext.Provider value={updateToken}>
+          {mode.title === "ENCOUNTER_LIBRARY" ? (
+          <Encounter
+            onClose={() => {
+              setMode({ title: "EDIT_MAP" });
             }}
-          >
-            <DmMap
-              controlRef={controlRef}
-              password={dmPassword}
-              map={dmAreaResponse.data.map}
-              liveMapId={dmAreaResponse.data?.activeMap?.id ?? null}
-              sendLiveMap={sendLiveMap}
-              saveFogProgress={saveFogProgress}
-              hideMap={hideMap}
-              showMapModal={showMapModal}
-              activeToolId={activeToolId}
-              setActiveToolId={setActiveToolId}
-              openNotes={() => {
-                actions.showNoteInWindow(null, "note-editor", true);
+            setActiveToolId={setActiveToolId}
+            dmAreaResponse={dmAreaResponse}
+            activeMapId={activeMapId}
+          />
+          ) : null}
+            <LoadedMapDiv
+              onDragEnter={(ev) => {
+                if (isFileDrag(ev) === false) {
+                  return;
+                }
+                ev.dataTransfer.dropEffect = "copy";
+                dragRef.current++;                                   // scale create based on number of tabs 1
+                setIsDraggingFile(dragRef.current !== 0);            // scale create based on number of tabs 1
+                ev.preventDefault();
               }}
-              openEncounters={() => {
-                // actions.showEncounterInWindow(null, "note-editor", true);
-                setMode({ title: "ENCOUNTER_LIBRARY" });
+              onDragLeave={(ev) => {
+                if (isFileDrag(ev) === false) {
+                  return;
+                }
+                dragRef.current--;
+                setIsDraggingFile(dragRef.current !== 0);
+                ev.preventDefault();
               }}
-              openMediaLibrary={() => {
-                setMode({ title: "MEDIA_LIBRARY" });
+              onDragOver={(ev) => {
+                if (isFileDrag(ev) === false) {
+                  return;
+                }
+                ev.preventDefault();
               }}
-              updateToken={updateToken}
+              onDrop={(ev) => {
+                ev.preventDefault();
+                if (isFileDrag(ev) === false) {
+                  return;
+                }
+                dragRef.current = 0;
+                setIsDraggingFile(dragRef.current !== 0);
 
-              // modetitle={mode.title}
-              // setActiveToolId={setActiveToolId}
-              // onClose={() => {
-              //   setMode({ title: "EDIT_MAP" });
-              // }}
-            />
-          </div>
-          </LoadedMapDiv>
-          
-        
+                const [file] = Array.from(ev.dataTransfer.files);
+
+                if (!file?.type.match(/image/)) {
+                  return;
+                }
+                const context = controlRef.current?.getContext();   // scale by understanding
+
+                if (!context) {
+                  return;
+                }
+                const coords = context.helper.coordinates.screenToImage([
+                  ev.clientX,
+                  ev.clientY,
+                ]);
+
+                const addTokenWithImageId = (tokenImageId: string) => {
+                  commitMutation<dmAreaTokenAddManyMutation>(relayEnvironment, {
+                    mutation: DmAreaTokenAddManyMutation,
+                    variables: {
+                      input: {
+                        mapId: dmAreaResponse.data!.map!.id,
+                        tokens: [
+                          {
+                            color: "red",
+                            x: coords[0],
+                            y: coords[1],
+                            rotation: 0,
+                            isVisibleForPlayers: false,
+                            isMovableByPlayers: false,
+                            isLocked: false,
+                            tokenImageId,
+                            label: "",
+                          },
+                        ],
+                      },
+                    },
+                  });
+                };
+
+                selectFile(file, [], ({ tokenImageId }) => {
+                  addTokenWithImageId(tokenImageId);
+                });
+              }}
+            >
+            {cropperNode}
+            {isDraggingFile ? (
+              <Center
+                position="absolute"
+                top="0"
+                width="100%"
+                zIndex={99999999}
+                justifyContent="center"
+              >
+                <DropZone
+                  onDragEnter={(ev) => {
+                    if (isFileDrag(ev) === false) {
+                      return;
+                    }
+                    ev.dataTransfer.dropEffect = "copy";
+                    dragRef.current++;
+                    setIsDraggingFile(dragRef.current !== 0);
+                    ev.preventDefault();
+                  }}
+                  onDragLeave={(ev) => {
+                    if (isFileDrag(ev) === false) {
+                      return;
+                    }
+                    dragRef.current--;
+                    setIsDraggingFile(dragRef.current !== 0);
+                    ev.preventDefault();
+                  }}
+                  onDragOver={(ev) => {
+                    if (isFileDrag(ev) === false) {
+                      return;
+                    }
+                    ev.preventDefault();
+                  }}
+                  onDrop={(ev) => {
+                    ev.preventDefault();
+                    if (isFileDrag(ev) === false) {
+                      return;
+                    }
+
+                    dragRef.current = 0;
+                    setIsDraggingFile(dragRef.current !== 0);
+
+                    ev.stopPropagation();
+                    const [file] = Array.from(ev.dataTransfer.files);
+                    if (file) {
+                      setImportModalFile(file);
+                    }
+                  }}
+                >
+                  Import Map or Media Library Item
+                </DropZone>
+              </Center>
+            ) : null}
+            {/* </LoadedMapDiv> */}
+            <div
+              style={{
+                flex: 1,
+                // position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              <DmMap
+                controlRef={controlRef}
+                password={dmPassword}
+                map={dmAreaResponse.data.map}
+                liveMapId={dmAreaResponse.data?.activeMap?.id ?? null}
+                sendLiveMap={sendLiveMap}
+                saveFogProgress={saveFogProgress}
+                hideMap={hideMap}
+                showMapModal={showMapModal}
+                activeToolId={activeToolId}
+                setActiveToolId={setActiveToolId}
+                openNotes={() => {
+                  actions.showNoteInWindow(null, "note-editor", true);
+                }}
+                openEncounters={() => {
+                  // actions.showEncounterInWindow(null, "note-editor", true);
+                  setMode({ title: "ENCOUNTER_LIBRARY" });
+                }}
+                openMediaLibrary={() => {
+                  setMode({ title: "MEDIA_LIBRARY" });
+                }}
+                updateToken={updateToken}
+
+                // modetitle={mode.title}
+                onClose={() => {
+                  setMode({ title: "EDIT_MAP" });
+                }}
+              />
+            </div>
+            </LoadedMapDiv>
+            </UpdateTokenContext.Provider>
+          </TokenMarkerContextProvider>
         </>
       ) : null}
       

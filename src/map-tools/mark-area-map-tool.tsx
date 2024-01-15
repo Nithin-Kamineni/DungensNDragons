@@ -21,13 +21,15 @@ export const MarkAreaMapTool: MapTool = {
     const markAreaContext = React.useContext(MarkAreaToolContext);
 
     // const tokenMarkerContext = React.useContext(TokenMarkerContext);
-    // console.log("444",tokenMarkerContext.state.tokenText)
+    console.log("444","marked",props.mapContext)
     usePinchWheelZoom(props.mapContext);
+    
     props.useMapGesture({
       onDrag: ({ movement, memo, event, tap }) => {
         if (props.mapContext.isAltPressed) {
           event.stopPropagation();
           memo = memo ?? props.mapContext.mapState.position.get();
+          console.log("marked area:",memo[0] + movement[0] / props.mapContext.viewport.factor, memo[1] - movement[1] / props.mapContext.viewport.factor)
           props.mapContext.setMapState({
             position: [
               memo[0] + movement[0] / props.mapContext.viewport.factor,

@@ -192,3 +192,32 @@ export const getPaginatedTokenImages = (
     ),
     RT.chain(applyDecoder(TokenImageListModel))
   );
+
+  export type GetAllTokenImagesParameter = {
+    first: number | null;
+    sourceSha256: string | null;
+    titleFilter: string | null;
+  };
+
+  export const getAllTokenImages = (
+    params: GetAllTokenImagesParameter
+  ) =>
+    pipe(
+      RT.ask<Dependencies>(),
+      RT.chainW(
+        (deps) => () => () =>
+          deps.db.all(
+            /* SQL */ `
+            SELECT
+              "id",
+              "title",
+              "sha256",
+              "extension",
+              "createdAt"
+            FROM
+              "tokenImages"
+            `
+          )
+      ),
+      RT.chain(applyDecoder(TokenImageListModel))
+    );

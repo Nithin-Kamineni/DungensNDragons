@@ -300,7 +300,9 @@ export const getActiveMap = () =>
     RT.chainW(() => RT.ask<SettingsDependency & MapsDependency>()),
     RT.chainW((deps) => () => async () => {
       const currentMapId = deps.settings.get("currentMapId");
+      console.log("currentMapId",currentMapId)
       if (currentMapId) {
+        console.log("deps.maps.get(currentMapId)",deps.maps.get(currentMapId));
         return deps.maps.get(currentMapId);
       }
       return null;

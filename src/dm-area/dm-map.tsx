@@ -624,6 +624,18 @@ const DMMapFragment = graphql`
   }
 `;
 
+// const TokenListRendererFragment = graphql`
+//   fragment mapView_TokenListRendererFragment on Map {
+//     tokens {
+//       id
+//       ...mapView_TokenRendererMapTokenFragment
+//     }
+//     grid {
+//       columnWidth
+//     }
+//   }
+// `;
+
 export const DmMap = (props: {
   map: dmMap_DMMapFragment$key;
   password: string;
@@ -654,11 +666,10 @@ export const DmMap = (props: {
   // );
   const [activeToolId, setActiveToolId] = [props.activeToolId, props.setActiveToolId]
 
-  // console.log("2324",tokenMarkerContext.state);
-  // tokenMarkerContext.setActiveToolId=activeToolId
+  const tokenMarkerContext = React.useContext(TokenMarkerContext);
 
-  
-  // tokenMarkerContext.setActiveToolId(setActiveToolId)
+  // const mapTokens = useFragment(TokenListRendererFragment, map);
+  // tokenMarkerContext.mapTokens = mapTokens.tokens;
 
 
   const userSelectedTool = React.useMemo(() => {
@@ -818,18 +829,18 @@ export const DmMap = (props: {
           React.ComponentProps<typeof ConfigureGridMapToolContext.Provider>
         >,
         [AreaSelectContextProvider, {}],
-        [
-          TokenMarkerContextProvider,
-          { currentMapId: map.id },
-        ] as ComponentWithPropsTuple<
-          React.ComponentProps<typeof TokenMarkerContextProvider>
-        >,
-        [
-          UpdateTokenContext.Provider,
-          { value: props.updateToken },
-        ] as ComponentWithPropsTuple<
-          React.ComponentProps<typeof UpdateTokenContext["Provider"]>
-        >,
+        // [
+        //   TokenMarkerContextProvider,
+        //   { currentMapId: map.id },
+        // ] as ComponentWithPropsTuple<
+        //   React.ComponentProps<typeof TokenMarkerContextProvider>
+        // >,
+        // [
+        //   UpdateTokenContext.Provider,
+        //   { value: props.updateToken },
+        // ] as ComponentWithPropsTuple<
+        //   React.ComponentProps<typeof UpdateTokenContext["Provider"]>
+        // >,
         [
           IsDungeonMasterContext.Provider,
           { value: true },
@@ -1013,6 +1024,7 @@ export const DmMap = (props: {
                 <Toolbar.Item isActive>
                   <Toolbar.Button
                     onClick={() => {
+                      console.log("encounter 2324",tokenMarkerContext.state.tokenText);
                       props.openEncounters();
                     }}
                   >

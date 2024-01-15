@@ -19,6 +19,7 @@ const TokenMarkerStateModel = io.type({
   tokenText: io.string,
   includeTokenText: io.boolean,
   tokenCounter: io.number,
+  allTokenCounter: io.number,
   /* whether the value of tokenCounter should be appended to the tokenText */
   includeTokenCounter: io.boolean,
 });
@@ -30,6 +31,13 @@ type TokenMarkerState = {
   includeTokenText: boolean;
   tokenCounter: number;
   includeTokenCounter: boolean;
+  allTokenCounter: number;
+  latestTokenID: any;
+  helper: any;
+  tempval: string;
+  set: any;
+  spring: any;
+  mapTokenDeleteMany: any;
 };
 
 type TokenMarkerContextValue = {
@@ -37,6 +45,7 @@ type TokenMarkerContextValue = {
   setState: React.Dispatch<React.SetStateAction<TokenMarkerState>>;
   currentMapId: string;
   setActiveToolId: any;
+  mapTokens: any;
 };
 
 export const TokenMarkerContext = React.createContext<TokenMarkerContextValue>(
@@ -51,6 +60,8 @@ const createDefaultTokenMarkerState = (): TokenMarkerState => ({
   includeTokenText: false,
   tokenCounter: 1,
   includeTokenCounter: false,
+  allTokenCounter:1,
+  latestTokenID: null
 });
 
 const tokenMarkerPersistedStateModel: PersistedStateModel<TokenMarkerState> = {
@@ -109,7 +120,7 @@ export const TokenMarkerMapTool: MapTool = {
     usePinchWheelZoom(props.mapContext);
     const tokenMarkerContext = React.useContext(TokenMarkerContext);
 
-    // tokenMarkerContext.state.tokenText = "wsdfs"
+    // tokenMarkerContext.state.tokenText = "sssssssssssssssss"
     // console.log("1234444",tokenMarkerContext.state.tokenText)
 
     const [addToken] =
@@ -157,6 +168,10 @@ export const TokenMarkerMapTool: MapTool = {
               tokenCounter: state.tokenCounter + 1,
             }));
           }
+          tokenMarkerContext.setState((state) => ({
+            ...state,
+            allTokenCounter: state.allTokenCounter + 1,
+          }));
 
           addToken({
             variables: {

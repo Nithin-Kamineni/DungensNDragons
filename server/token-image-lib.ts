@@ -192,3 +192,11 @@ export const getPaginatedTokenImages = (
     checkAdmin(),
     RT.chainW(() => db.getPaginatedTokenImages(args))
   );
+
+  export const getAllTokenImages = (
+    args: db.GetAllTokenImagesParameter
+  ) =>
+    pipe(
+      checkAdmin(),
+      RT.chainW(() => db.getAllTokenImages(args))
+    );

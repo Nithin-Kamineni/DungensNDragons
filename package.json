@@ -48,6 +48,7 @@
   ],
   "dependencies": {
     "@airjp73/dice-notation": "2.2.2",
+    "@apollo/client": "^3.8.9",
     "@chakra-ui/icons": "^2.1.1",
     "@graphql-yoga/subscription": "0.0.2-canary-7506883.0",
     "@material-ui/core": "^4.12.4",

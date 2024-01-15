@@ -58,6 +58,7 @@ import { ISendRequestTask } from "./http-request";
 import { useGameSettings } from "./game-settings";
 import { useViewerRole } from "./authenticated-app-shell";
 import { mapView_MapMoveMutation } from "./__generated__/mapView_MapMoveMutation.graphql";
+import { TokenMarkerContext } from "./map-tools/token-marker-map-tool";
 
 type Vector2D = [number, number];
 
@@ -72,19 +73,28 @@ enum LayerRenderOrder {
   outline = 7,
 }
 
-// convert image relative to three.js
-const calculateX = (x: number, factor: number, dimensionsWidth: number) =>
-  x * factor - dimensionsWidth / 2;
 
-const calculateY = (y: number, factor: number, dimensionsHeight: number) =>
-  -y * factor + dimensionsHeight / 2;
+// convert image relative to three.js
+const calculateX = (x: number, factor: number, dimensionsWidth: number) =>{
+  // console.log("props.factor , sharedMapState.ratio",factor)
+  // console.log("props.x, props.dimensions.width", x, dimensionsWidth)
+  return x * factor - dimensionsWidth / 2;
+}
+
+const calculateY = (y: number, factor: number, dimensionsHeight: number) => {
+  // console.log("props.y, props.dimensions.height", y, dimensionsHeight)
+  return -y * factor + dimensionsHeight / 2;
+}
 
 // convert three.js to image relative
-const calculateRealX = (x: number, factor: number, dimensionsWidth: number) =>
-  (x + dimensionsWidth / 2) / factor;
-
-const calculateRealY = (y: number, factor: number, dimensionsHeight: number) =>
-  ((y - dimensionsHeight / 2) / factor) * -1;
+const calculateRealX = (x: number, factor: number, dimensionsWidth: number) => {
+  return (x + dimensionsWidth / 2) / factor;
+}
+  
+const calculateRealY = (y: number, factor: number, dimensionsHeight: number) => {
+  return ((y - dimensionsHeight / 2) / factor) * -1;
+}
+  
 
 export type Dimensions = { width: number; height: number; ratio: number };
 
@@ -206,6 +216,9 @@ const TokenRenderer = (props: {
   columnWidth: number | null;
 }) => {
   const token = useFragment(TokenRendererMapTokenFragment, props.token);
+  // token.isLocked=true
+  // token.color="rgb(255, 255, 255)"
+
   const sharedMapState = React.useContext(SharedMapState);
   const updateToken = React.useContext(UpdateTokenContext);
   const pendingChangesRef = React.useRef<TokenPartialChanges>({});
@@ -233,6 +246,15 @@ const TokenRenderer = (props: {
 
   const store = useCreateStore();
   const updateRadiusRef = React.useRef<null | ((radius: number) => void)>(null);
+
+  const tokenMarkerContext = React.useContext(TokenMarkerContext);
+
+  // tokenMarkerContext.helper=sharedMapState.helper
+  // tokenMarkerContext.setState((state) => ({
+  //   ...state,
+  //   tempval: "map-view came"
+  // }))
+
   const [values, setValues] = useControls(
     () => ({
       position: {
@@ -377,6 +399,7 @@ const TokenRenderer = (props: {
         type: LevaInputs.COLOR,
         label: "Color",
         value: token.color ?? "rgb(255, 255, 255)",
+        // value: "rgb(0, 255, 0)",
         onChange: (color: string, _, { initial, fromPanel }) => {
           if (initial || !fromPanel) {
             return;
@@ -437,6 +460,17 @@ const TokenRenderer = (props: {
       tokenImageId: levaPluginTokenImage({
         value: token.tokenImage?.id ?? null,
         onChange: (tokenImageId: null | string, _, { initial, fromPanel }) => {
+          // tokenMarkerContext.latestToken=props.id;
+          if(tokenMarkerContext){  //for player not having tokenmarkercontex access
+            tokenMarkerContext.setState((state) => ({
+              ...state,
+              latestTokenID: props.id,
+              // tempval: "map-view came",
+              helper:sharedMapState.helper
+            }))
+          }
+          // console.log("tokenImage latest updated",tokenImageId, tokenMarkerContext.state.latestTokenID)
+          
           if (initial || !fromPanel) {
             return;
           }
@@ -632,6 +666,14 @@ const TokenRenderer = (props: {
         const [x, y] = sharedMapState.helper.coordinates.canvasToImage(
           sharedMapState.helper.coordinates.threeToCanvas([newX, newY])
         );
+
+        console.log("jai balaya",newX,newY)
+        console.log(x,y)
+        console.log(sharedMapState.helper.coordinates.canvasToThree(
+          sharedMapState.helper.coordinates.imageToCanvas([x,y])
+        ))
+
+        console.log("jai balayaaaaaaaaaaaaaa")
 
         setValues({
           position: [x, y],
@@ -1417,9 +1459,21 @@ const MapViewRenderer = (props: {
     },
   }));
 
+  const tokenMarkerContext = React.useContext(TokenMarkerContext);
+
+  React.useEffect(()=>{
+    tokenMarkerContext.setState((state) => ({
+      ...state,
+      // tempval: "map-view set and spring cord",
+      spring: spring,
+      set: set,
+    }))
+  },[])
+
+
   const moveToSubPosition = (data: mapView_MapMoveSubscriptionResponse) => {
     set({
-      scale: [data.mapMove.scale, data.mapMove.scale, 1],
+      scale: [data.mapMove.scale*1.5, data.mapMove.scale*1.5, 1],
       position: [data.mapMove.position.x, data.mapMove.position.y, 0],
     });
   };
@@ -1632,14 +1686,17 @@ const MapViewRenderer = (props: {
     scene,
   ]);
 
+  
+
   React.useEffect(() => {
     if (props.controlRef) {
       props.controlRef.current = {
         controls: {
           center: () =>
             set({
-              scale: [1, 1, 1] as [number, number, number],
+              scale: [2, 2, 2] as [number, number, number],
               position: [0, 0, 0] as [number, number, number],
+              // position: [3.714, -2.6452435293926206 , 0] as [number, number, number],
             }),
           zoomIn: () => {
             const scale = spring.scale.get();

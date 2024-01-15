@@ -119,6 +119,7 @@ export const usePinchWheelZoom = (mapToolState: SharedMapToolState) => {
 export const DragPanZoomMapTool: MapTool = {
   id: "drag-pan-zoom-map-tool",
   Component: (props) => {
+    // console.log("drag key", props)
     usePinchWheelZoom(props.mapContext);
     props.useMapGesture({
       onDrag: ({ movement, memo, event }) => {

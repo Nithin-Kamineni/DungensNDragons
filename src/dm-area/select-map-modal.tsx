@@ -74,6 +74,8 @@ type SelectMapModalProps = {
   liveMapId: null | string;
   loadedMapId: null | string;
   canClose: boolean;
+  activeMapId: any;
+  setActiveMapId: any;
 };
 
 const SelectMapModal_MapsQuery = graphql`
@@ -180,6 +182,7 @@ const MapList = (props: {
             tabIndex={1}
             isActive={item.node.id === props.activeMapId}
             onClick={() => {
+              console.log("4 setting", item.node.id)
               props.setActiveMapId(item.node.id);
             }}
           >
@@ -307,8 +310,10 @@ export const SelectMapModal = ({
   liveMapId,
   loadedMapId,
   canClose,
+  activeMapId,
+  setActiveMapId
 }: SelectMapModalProps): React.ReactElement => {
-  const [activeMapId, setActiveMapId] = React.useState(loadedMapId);
+  // const [activeMapId, setActiveMapId] = [activeMapId, setActiveMapId];
   const [modalState, setModalState] = React.useState<ModalStates | null>(null);
   const [filter, setFilterValue] = React.useState("");
 
@@ -450,7 +455,11 @@ export const SelectMapModal = ({
       {modalState ? (
         modalState.type === ModalType.EDIT_TITLE ? (
           <ChangeMapTitleModal
-            closeModal={() => setModalState(null)}
+            closeModal={() => {
+                setModalState(null)
+                console.log("3 setting out")
+              }
+            }
             updateMapTitle={(newTitle) =>
               mapUpdateTitle({
                 variables: {
@@ -482,8 +491,11 @@ export const SelectMapModal = ({
                 },
                 onCompleted: () => {
                   setModalState(null);
-                  setActiveMapId((activeMapId) =>
-                    activeMapId === mapId ? null : activeMapId
+                  setActiveMapId((activeMapId) =>{
+                    console.log("2 setting")
+                    console.log("2 setting active map: ",activeMapId === mapId ? null : activeMapId)
+                    return activeMapId === mapId ? null : activeMapId
+                  }
                   );
                 },
               });
@@ -561,6 +573,8 @@ export const SelectMapModal = ({
                 },
                 onCompleted: (response) => {
                   if (response.mapCreate.__typename === "MapCreateSuccess") {
+                    console.log("1 setting")
+                    console.log("1 setting active map: ",response.mapCreate.createdMap.id)
                     setActiveMapId(response.mapCreate.createdMap.id);
                   }
                 },

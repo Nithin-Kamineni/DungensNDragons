@@ -65,3 +65,27 @@ export const buildConnectionObject = <T>(params: {
     },
   };
 };
+
+export const buildAllConnectionObject = <T>(params: {
+  listData: T[];
+  amount: number;
+  encodeCursor: (input: T) => string;
+}) => {
+  let hasNextPage = false;
+
+  let listData = params.listData;
+  const edges = listData.map((node) => ({
+    node,
+    cursor: null
+  }));
+
+  return {
+    edges,
+    // pageInfo: {
+    //   hasNextPage,
+    //   hasPreviousPage: false,
+    //   startCursor: "",
+    //   endCursor: "",
+    // },
+  };
+};

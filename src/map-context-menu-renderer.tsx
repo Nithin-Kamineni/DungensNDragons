@@ -11,6 +11,11 @@ import {
   MapTokenAddManyTokenInput,
 } from "./__generated__/mapContextMenuRendererMapTokenAddManyMutation.graphql";
 import { mapContextMenuRenderer_MapFragment$key } from "./__generated__/mapContextMenuRenderer_MapFragment.graphql";
+import {
+  TokenMarkerContext,
+  TokenMarkerContextProvider,
+  TokenMarkerMapTool,
+} from "./map-tools/token-marker-map-tool";
 
 const MapContextMenuRendererMapTokenRemoveManyMutation = graphql`
   mutation mapContextMenuRendererMapTokenRemoveManyMutation(
@@ -92,6 +97,15 @@ export const ContextMenuRenderer = (props: {
     useMutation<mapContextMenuRendererMapTokenAddManyMutation>(
       MapContextMenuRendererMapTokenAddManyMutation
     );
+
+  const tokenMarkerContext = React.useContext(TokenMarkerContext);
+  React.useEffect(()=>{
+    tokenMarkerContext.setState((state) => ({
+      ...state,
+      tempval: "delewte token",
+      mapTokenDeleteMany:mapTokenDeleteMany
+    }))
+  },[])
 
   if (state === null) {
     return null;

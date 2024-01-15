@@ -187,6 +187,18 @@ const GraphQLTokenImageConnectionObjectType =
     ],
   });
 
+  const GraphQLAllTokenImageConnectionObjectType =
+  t.objectType<any>({
+    name: "AllTokenImageConnection",
+    fields: () => [
+      t.field({
+        name: "edges",
+        type: t.List(GraphQLTokenImageEdgeObjectType),
+        resolve: (source) => source.edges,
+      }),
+    ],
+  });
+
 const sequenceReaderTask = sequenceT(RT.readerTask);
 
 export const queryFields = [
@@ -222,6 +234,28 @@ export const queryFields = [
                 })
               )
             )
+          )
+        ),
+        context
+      ),
+  }),
+  t.field({
+    name: "allTokenImages",
+    type: GraphQLAllTokenImageConnectionObjectType,
+    resolve: (_, args, context) =>
+      RT.run(
+        pipe(
+          lib.getAllTokenImages({
+            first: null,
+            sourceSha256: null,
+            titleFilter: null,
+          }),
+          RT.map((records) =>
+            Relay.buildAllConnectionObject({
+              listData: records,
+              amount: records.length,
+              encodeCursor: buildTokenImagesCursor,
+            })
           )
         ),
         context

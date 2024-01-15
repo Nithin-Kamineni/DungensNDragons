@@ -140,6 +140,29 @@ const TokenImagesQuery = graphql`
   }
 `;
 
+// const AllTokenImagesFragment = graphql`
+// fragment levaPluginTokenImage_TokenImagesFragment on Query
+//   @argumentDefinitions(
+//     titleFilter: { type: "String" }
+//   )
+//   @refetchable(queryName: "levaPluginTokenImage_MoreTokenImagesQuery") {
+//     tokenImages(titleFilter: $titleFilter)
+//       @connection(key: "levaPluginTokenImage_tokenImages") {
+//       __id
+//       edges {
+//         node {
+//           id
+//           title
+//           url
+//         }
+//       }
+//       pageInfo {
+//         hasNextPage
+//       }
+//     }
+//   }
+// `;
+
 const TokenImageList = (props: {
   data: levaPluginTokenImage_TokenImagesFragment$key;
   onSelect: (tokenImageId: string) => void;
@@ -150,6 +173,8 @@ const TokenImageList = (props: {
   const pagination = usePagination(TokenImagesFragment, props.data);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const elementRef = React.useRef<HTMLDivElement>(null);
+  console.log("3 paginations:")
+  console.log(pagination.data.tokenImages)
   return (
     <>
       <PopoverHeader>Select Token Image</PopoverHeader>
@@ -269,7 +294,18 @@ const TokenImagePopoverContent = (props: {
     )
   );
 
+  console.log("1 query:", query)
+
   const [, latestData] = useCurrent(query.data, !query.error && !query.data, 0);
+
+  console.log("2 latest data:",latestData)
+  if(latestData){
+    console.log("start unpaginated")
+    // let data = useQuery(AllTokenImagesFragment);
+    console.log("unpaginated data")
+    // console.log(data)
+  }
+  // console.log("latestdata",latestData)
 
   return latestData ? (
     <TokenImageList

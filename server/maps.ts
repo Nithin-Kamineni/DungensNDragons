@@ -190,6 +190,7 @@ export class Maps {
   }
 
   get(id: string) {
+    console.log(this._maps)
     return this._maps.find((map) => map.id === id) ?? null;
   }
 

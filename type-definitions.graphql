@@ -139,7 +139,7 @@ type Query {
     sourceImageSha256: String
     titleFilter: String
   ): TokenImageConnection
-
+  allTokenImages: AllTokenImageConnection
   """
   A connection of all available maps within the library
   """
@@ -249,6 +249,10 @@ type NoteSearchResultType {
 type TokenImageConnection {
   edges: [TokenImageEdge!]!
   pageInfo: PageInfo!
+}
+
+type AllTokenImageConnection {
+  edges: [TokenImageEdge!]!
 }
 
 type TokenImageEdge {

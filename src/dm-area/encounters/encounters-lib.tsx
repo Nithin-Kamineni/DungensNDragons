@@ -1,12 +1,22 @@
 import * as React from "react";
 import { Modal, ModalDialogSize } from "../../modal";
 import * as Icon from "../../feather-icons";
+import { useQuery } from "relay-hooks";
 // import * as Button from "../../button";
+import {
+  Canvas,
+  PointerEvent,
+  useFrame,
+  useLoader,
+  useThree,
+  ViewportData,
+} from "react-three-fiber";
 import { ISendRequestTask, sendRequest } from "../../http-request";
 import useAsyncEffect from "@n1ru4l/use-async-effect";
 import { buildApiUrl } from "../../public-url";
 import { useGetIsMounted } from "../../hooks/use-get-is-mounted";``
 import { useInvokeOnScrollEnd } from "../../hooks/use-invoke-on-scroll-end";
+import { Checkbox, CheckboxGroup } from '@chakra-ui/react'
 import styled from "@emotion/styled/macro";
 import { ImageLightBoxModal } from "../../image-lightbox-modal";
 import { useShareImageAction } from "../../hooks/use-share-image-action";
@@ -32,8 +42,8 @@ import {
   PopoverArrow,
   PopoverCloseButton,
   PopoverAnchor,
+  Input
 } from '@chakra-ui/react'
-
 // import "primeflex/primeflex.css";
 // import "primereact/resources/primereact.css";
 ////
@@ -75,10 +85,62 @@ import {
   AreaSelectMapTool,
 } from "../../map-tools/area-select-map-tool";
 import { RulerMapTool } from "../../map-tools/ruler-map-tool";
+import graphql from "babel-plugin-relay/macro";
+import { UpdateTokenContext } from "../../update-token-context";
+import { ReactRelayContext, useFragment, useMutation } from "relay-hooks";
+import {
+  Table,
+  Thead,
+  Tbody,
+  Tfoot,
+  Tr,
+  Th,
+  Td,
+  TableCaption,
+  TableContainer,
+} from '@chakra-ui/react'
+import { DeleteIcon, RepeatIcon } from "@chakra-ui/icons";
 
 const CustomizedBreadcrumbSeparator = () => {
   return <div>&gt;</div>;
 };
+
+const TokenLibraryImagesQuery:any = graphql`
+query encountersLib_allTokenImagesQuery {
+  allTokenImages {
+    __id
+    edges {
+      node {
+        id
+        title
+        url
+      }
+    }
+  }
+}`
+
+// const GET_Image = gql`
+// query getAllTokenImage {
+//   allTokenImages {
+//     edges {
+//       node {
+//         id
+//         title
+//         url
+//       }
+//     }
+//   }
+// }
+// `;
+
+const SplashShareImage_SplashShareImageQuery:any = graphql`
+  query encountersLib_splashShareImageSharedSplashImageQuery @live {
+    sharedSplashImage {
+      id
+      url
+    }
+  }
+`;
 
 const TokenMarkerSettings = (props:{setActiveToolId: any}): React.ReactElement => {
   const tokenMarkerContext = React.useContext(TokenMarkerContext);
@@ -88,109 +150,16 @@ const TokenMarkerSettings = (props:{setActiveToolId: any}): React.ReactElement =
     props.setActiveToolId('token-marker-map-tool')
     console.log("testAns:");
   }
-  
-
-  // const updateRadiusRef = React.useRef<null | ((radius: number) => void)>(null);
-
-  // const store = useCreateStore();
-  
-  // const [, set] = useControls(
-  //   () => ({
-  //     radius: {
-  //       type: LevaInputs.NUMBER,
-  //       label: "Size",
-  //       value: tokenMarkerContext.state.tokenRadius.get(),
-  //       step: 1,
-  //       onChange: (value) => {
-  //         tokenMarkerContext.state.tokenRadius.set(value);
-  //       },
-  //     },
-  //     radiusShortcuts: buttonGroup({
-  //       label: null,
-  //       opts: {
-  //         "0.25x": () => updateRadiusRef.current?.(0.25),
-  //         "0.5x": () => updateRadiusRef.current?.(0.5),
-  //         "1x": () => updateRadiusRef.current?.(1),
-  //         "2x": () => updateRadiusRef.current?.(2),
-  //         "3x": () => updateRadiusRef.current?.(3),
-  //       },
-  //     }),
-  //     color: {
-  //       type: LevaInputs.COLOR,
-  //       label: "Color",
-  //       value: tokenMarkerContext.state.tokenColor ?? "rgb(255, 255, 255)",
-  //       onChange: (color: string) => {
-  //         tokenMarkerContext.setState((state) => ({
-  //           ...state,
-  //           tokenColor: color,
-  //         }));
-  //       },
-  //     },
-  //     label: {
-  //       type: LevaInputs.STRING,
-  //       label: "Label",
-  //       value: tokenMarkerContext.state.tokenText,
-  //       optional: true,
-  //       disabled: !tokenMarkerContext.state.includeTokenText,
-  //       onChange: (tokenText, _, { initial, disabled, fromPanel }) => {
-  //         if (initial || !fromPanel) {
-  //           return;
-  //         }
-
-  //         tokenMarkerContext.setState((state) => ({
-  //           ...state,
-  //           includeTokenText: !disabled,
-  //           tokenText: tokenText ?? state.tokenText,
-  //         }));
-  //       },
-  //     },
-  //     counter: {
-  //       type: LevaInputs.NUMBER,
-  //       label: "Counter",
-  //       step: 1,
-  //       min: 0,
-  //       value: tokenMarkerContext.state.tokenCounter,
-  //       optional: true,
-  //       disabled: !tokenMarkerContext.state.includeTokenCounter,
-  //       onChange: (tokenCounter, _, { initial, disabled, fromPanel }) => {
-  //         if (initial || !fromPanel) {
-  //           return;
-  //         }
-
-  //         tokenMarkerContext.setState((state) => ({
-  //           ...state,
-  //           includeTokenCounter: !disabled,
-  //           tokenCounter: tokenCounter ?? state.tokenCounter,
-  //         }));
-  //       },
-  //     },
-  //   }),
-  //   { store },
-  //   [tokenMarkerContext.state]
-  // );
-
-  // React.useEffect(() => {
-  //   updateRadiusRef.current = (factor) => {
-  //     tokenMarkerContext.state.tokenRadius.set(
-  //       (configureGridContext.state.columnWidth / 2) * factor * 0.9
-  //     );
-  //     set({
-  //       radius: tokenMarkerContext.state.tokenRadius.get(),
-  //     });
-  //   };
-  // });
 
   return (
     <>
-    wdwdwdw
-    <Button onClick={testFunc}>test Btn</Button>
-      {/* <ThemedLevaPanel
-        fill={true}
-        titleBar={false}
-        store={store}
-        oneLineLabels
-        hideCopyButton
-      /> */}
+      <Button 
+      onClick={()=>{
+        testFunc()
+      }}
+      >
+      test Btn
+    </Button>
     </>
   );
 };
@@ -198,6 +167,8 @@ const TokenMarkerSettings = (props:{setActiveToolId: any}): React.ReactElement =
 type MediaLibraryProps = {
   onClose: () => void;
   setActiveToolId: any;
+  dmAreaResponse: any;
+  activeMapId: string;
 };
 
 type MediaLibraryItem = {
@@ -314,17 +285,169 @@ interface City {
   code: string;
 }
 
-export const Encounter: React.FC<MediaLibraryProps> = ({ onClose, setActiveToolId }) => {
+// const encountersLib_Active_DMMap = graphql`
+//   query encountersLib_activeDMMap_Query {
+//     activeMap {
+//       id
+//       title
+//       mapImageUrl
+//       fogProgressImageUrl
+//       fogLiveImageUrl
+//       showGrid
+//       showGridToPlayers
+//       tokens{
+//         id
+//         x
+//         y
+//         rotation
+//         radius
+//         color
+//         label
+//         isVisibleForPlayers
+//         isMovableByPlayers
+//         isLocked
+//         referenceId
+//       }
+//     }
+//   }
+// `;
+
+const encountersLib_DMMap = graphql`
+  query encountersLib_activeDMMap_Query($loadedMapId: ID!){
+    map(id: $loadedMapId){
+      id
+      title
+      mapImageUrl
+      fogProgressImageUrl
+      fogLiveImageUrl
+      showGrid
+      showGridToPlayers
+      tokens{
+        id
+        x
+        y
+        rotation
+        radius
+        color
+        label
+        isVisibleForPlayers
+        isMovableByPlayers
+        isLocked
+        referenceId
+      }
+    }
+  }
+`;
+  
+
+export type Dimensions = { width: number; height: number; ratio: number };
+
+export const Encounter: React.FC<MediaLibraryProps> = ({ onClose, setActiveToolId, dmAreaResponse, activeMapId }):React.ReactElement => {
+
+  // const map = useQuery<any>(
+  //   encountersLib_Active_DMMap
+  // );
+
+  const map = useQuery<any>(
+    encountersLib_DMMap,
+    {
+      loadedMapId: activeMapId ?? "",
+    },
+    {}
+  );
+
+  console.log("maps tokens now:")
+  
+  console.log(map)
+  
+  let mapid: any;
+  let tokens: any;
+
+  if(map.data?.map){
+    mapid = map.data?.map.id;
+    tokens = map.data?.map.tokens
+  }
+  
+  interface IHash {
+    [key: string]: number;
+  }
+
+  let labelMap:IHash = {}
+
+  const [labelMapState, setLabelMapState] = React.useState(labelMap);
+
+  const [processed, SetProcessed] = React.useState(0);
+
+  React.useEffect(()=>{
+    labelMap = {}
+    if(tokens){
+      for(let i=0;i<tokens.length;i++){
+        if(!(tokens[i].label.split(' ')[0] in labelMap)){
+          labelMap[tokens[i].label.split(' ')[0]]=0
+        }
+        labelMap[tokens[i].label.split(' ')[0]]+=1
+      }
+      setLabelMapState(labelMap);
+      console.log("labels",labelMapState)
+    }
+  },[tokens])
+  
+  // map.
+  
+  
+
   const [state, dispatch] = React.useReducer(stateReducer, initialState);
   const getIsMounted = useGetIsMounted();
   const accessToken = useAccessToken();
 
+  const updateToken = React.useContext(UpdateTokenContext);
   const tokenMarkerContext = React.useContext(TokenMarkerContext);
+
+  console.log("testmap view",tokenMarkerContext.state.tempval);
+
+  // let [x,y] = tokenMarkerContext.state.helper.coordinates.canvasToThree(
+  //   tokenMarkerContext.state.helper.coordinates.imageToCanvas([1737,905]
+  // ))
+  // console.log(x,y)
+
+  // console.log(
+  //   tokenMarkerContext.state.helper.coordinates.imageToCanvas([290,6140])
+  // )
+  console.log("--------------------------------")
+  
   // tokenMarkerContext.state.includeTokenText.set(true);
   // tokenMarkerContext.state.tokenRadius.set(10)
   // tokenMarkerContext.state.tokenText="Hello"
 
-  // console.log("2324",tokenMarkerContext.state);
+  // const data = useQuery<tokenImageCropper_TokenLibraryImagesQuery>(
+  //   TokenLibraryImagesQuery
+  // );
+
+  const data = useQuery<any>(
+    TokenLibraryImagesQuery
+  );
+
+  console.log("images data e:")
+  console.log(data.data)
+
+  
+  let paladin: null|string = null
+  if(!data.isLoading && data.error===null){
+    paladin=data.data?.allTokenImages.edges[1].node.id
+  }
+
+  React.useEffect(()=>{
+    console.log("came here to update token",tokenMarkerContext.state.latestTokenID)
+      if(tokenMarkerContext.state.latestTokenID){
+        console.log("entered...",paladin)
+        updateToken(tokenMarkerContext.state.latestTokenID,{isVisibleForPlayers:true,isMovableByPlayers:true, tokenImageId:paladin})
+        tokenMarkerContext.setState((state) => ({
+          ...state,
+          latestTokenID: null
+        }))
+      }
+    },[tokenMarkerContext.state.latestTokenID])
+
   useAsyncEffect(function* (onCancel, cast) {
     const task = sendRequest({
       method: "GET",
@@ -376,76 +499,116 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose, setActiveToolI
     });
   }, [state]);
 
-  const onScroll = useInvokeOnScrollEnd(
-    React.useCallback(() => {
-      if (state.mode === "LOADED") {
-        fetchMore();
-      }
-    }, [state])
-  );
+  // const onScroll = useInvokeOnScrollEnd(
+  //   React.useCallback(() => {
+  //     if (state.mode === "LOADED") {
+  //       fetchMore();
+  //     }
+  //   }, [state])
+  // );
 
-  const [reactTreeNode, showSelectFileDialog] = useSelectFileDialog(
-    React.useCallback((file) => {
-      const formData = new FormData();
-      formData.append("file", file);
+  // const [reactTreeNode, showSelectFileDialog] = useSelectFileDialog(
+  //   React.useCallback((file) => {
+  //     const formData = new FormData();
+  //     formData.append("file", file);
 
-      const task = sendRequest({
-        url: buildApiUrl("/images"),
-        method: "POST",
-        body: formData,
-        headers: {
-          Authorization: accessToken ? `Bearer ${accessToken}` : null,
-        },
-      });
+  //     const task = sendRequest({
+  //       url: buildApiUrl("/images"),
+  //       method: "POST",
+  //       body: formData,
+  //       headers: {
+  //         Authorization: accessToken ? `Bearer ${accessToken}` : null,
+  //       },
+  //     });
 
-      task.done.then((response) => {
-        if (getIsMounted() === false) return;
-        if (response.type === "success") {
-          const result = JSON.parse(response.data);
-          dispatch({
-            type: "CREATE_ITEM_DONE",
-            data: {
-              item: result.data.item,
-            },
-          });
-        }
-      });
-    }, [])
-  );
+  //     task.done.then((response) => {
+  //       if (getIsMounted() === false) return;
+  //       if (response.type === "success") {
+  //         const result = JSON.parse(response.data);
+  //         dispatch({
+  //           type: "CREATE_ITEM_DONE",
+  //           data: {
+  //             item: result.data.item,
+  //           },
+  //         });
+  //       }
+  //     });
+  //   }, [])
+  // );
 
   const [mode, setMode] = React.useState<"read" | "write">("read");
 
-  const [selectedCities, setSelectedCities] = React.useState<City[]>([]);
+  let citiesString: string|null = localStorage.getItem("selectedCities")
+  
+  const [selectedCities, setSelectedCities] = React.useState<City[]>((JSON.parse(citiesString))||[]);
+  
+  const handelSelectedCities = (value: City[]) => {
+    // console.log("selectedCities value",value);
+    localStorage.setItem("selectedCities",JSON.stringify(value))
+    setSelectedCities(value);
+  }
   const breadCrums = ["Selection", "Placement", "Encounter"];
 
-  const [breadCrumsProcess, setBreadCrumsProcess] = React.useState(breadCrums.slice(0,1))
+  // console.log("localstorage", JSON.parse(localStorage.getItem("selectedCities"))||[])
 
-  const [pagesLoaded, setpagesLoaded] = React.useState(0);
+  const [pagesLoaded, setpagesLoaded] = React.useState(Number(localStorage.getItem("pageLoaded"))||0);
+
+  const [breadCrumsProcess, setBreadCrumsProcess] = React.useState(breadCrums.slice(0,pagesLoaded+1))
+  
   const handelPagesLoaded = (page: number) => {
     setpagesLoaded(page);
+    localStorage.setItem("pageLoaded",`${page}`)
     setBreadCrumsProcess(breadCrums.slice(0,page+1))
   };
 
   const cities: City [] = [
-        { name: 'New York', code: 'NY' },
+        { name: 'NewYork', code: 'NY' },
         { name: 'Rome', code: 'RM' },
         { name: 'London', code: 'LDN' },
         { name: 'Istanbul', code: 'IST' },
         { name: 'Paris', code: 'PRS' }
     ];
 
-    React.useEffect(()=>{
-      console.log(selectedCities);
-    },[selectedCities])
+    console.log("labels4=",cities[1].name)
+    console.log("labels3",labelMapState[cities[1].name], labelMapState)
 
-    const testFunc = () => {
+    React.useEffect(()=>{
+      testFunc2();
+    },[tokenMarkerContext.state.allTokenCounter])
+
+    const testFunc = (name: string) => {
       setActiveToolId('token-marker-map-tool')
-      console.log("testAns:");
+      console.log("testAns:",tokenMarkerContext.state.allTokenCounter);
+      tokenMarkerContext.state.includeTokenText=true;
+      tokenMarkerContext.state.tokenText=name
     }
 
     const testFunc2 = () => {
       setActiveToolId('drag-pan-zoom-map-tool')
       console.log("testAns2:");
+    }
+
+    const lockToken = (tokenId: string, flag: boolean) => {
+      updateToken(tokenId,{isLocked:!flag})
+    }
+
+    const visibleToken = (tokenId: string, flag: boolean) => {
+      updateToken(tokenId,{isVisibleForPlayers:!flag})
+    }
+
+    const movableToken = (tokenId: string, flag: boolean) => {
+      updateToken(tokenId,{isMovableByPlayers:!flag})
+    }
+
+    const deleteToken = (tokenId: string) => {
+      tokenMarkerContext.state.mapTokenDeleteMany({
+        variables: {
+          input: {
+            mapId: mapid,
+            tokenIds: Array.from([tokenId]),
+          },
+        },
+      })
     }
     
   return (
@@ -454,7 +617,7 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose, setActiveToolI
     >
     <DraggableWindow
         // onMouseDown={props.focus}
-        windowWidth={400}
+        windowWidth={450}
         onKeyDown={(ev) => {
           ev.stopPropagation();
           if (ev.key !== "Escape") {
@@ -468,7 +631,16 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose, setActiveToolI
         }
         headerContent={
           <>
-          Encounters
+          <HStack spacing='10px'>
+            <Box>Encounters</Box>
+            <IconButton size='xs' aria-label='Search database' icon={<RepeatIcon />} onClick={()=>{
+              localStorage.setItem("selectedCities","[]")
+              localStorage.setItem("pageLoaded","0")
+              setSelectedCities([]);
+              setpagesLoaded(0);
+              setBreadCrumsProcess(breadCrums.slice(0,1))
+            }}/>
+          </HStack>
           </>
         }
         bodyContent={
@@ -488,12 +660,18 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose, setActiveToolI
 
           <Box overflowY="scroll" height="100%">
           {pagesLoaded==0 && <>
+            {/* {
+              loading && <>Loading...</>
+            }
+            {
+              error && <>Error...</>
+            } */}
             <div className="card flex justify-content-center">
-              <MultiSelect value={selectedCities} onChange={(e: MultiSelectChangeEvent) => setSelectedCities(e.value)} options={cities} optionLabel="name" 
+              <MultiSelect value={selectedCities} onChange={(e: MultiSelectChangeEvent) => handelSelectedCities(e.value)} options={cities} optionLabel="name" 
                   filter placeholder="Select Cities" maxSelectedLabels={3} className="w-full md:w-20rem" />
             </div>
             <br/>
-            <VStack>
+            <VStack overflowY="scroll" height="100%">
               {selectedCities.length>0 && 
                 <>
                 {selectedCities.map((cityObj)=>
@@ -509,12 +687,13 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose, setActiveToolI
                   <IconButton ml="-5" background='green.400' onClick={() =>handelPagesLoaded(1)} color='white' aria-label='Search database' icon={<ArrowRightIcon />} />
                 </Flex>
                 </>
-                }
+              }
+
             </VStack>
           </>}
           {pagesLoaded==1 && <>
             <br/>
-            <VStack>
+            <VStack overflowY="scroll" height="100%">
               <Button colorScheme='teal' size='xs' onClick={testFunc2}>
                 reset
               </Button>
@@ -522,10 +701,10 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose, setActiveToolI
                 <>
                 {selectedCities.map((cityObj)=>
                   <HStack spacing="10px">
-                    <PinInput value="0" size='sm'>
-                      <PinInputField />
-                    </PinInput>
-                    <Button colorScheme='teal' size='xs' onClick={testFunc}>
+                    <Input value={`${labelMapState[cityObj.name]||0}`} size='sm' htmlSize={1} width='auto'/>
+                    <Button colorScheme='teal' size='xs' onClick={()=>{
+                      testFunc(cityObj.name)
+                    }}>
                       {cityObj.name}
                     </Button>
                     <Popover>
@@ -555,6 +734,77 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose, setActiveToolI
                 }
             </VStack>
           </>}
+          {pagesLoaded==2 && 
+          <>
+            <br/>
+            <VStack>
+
+              {tokens && 
+                <>
+                  <TableContainer overflowY="scroll" height="100%">
+                  <Table size='sm'>
+                    <Thead>
+                      <Tr>
+                        <Th>Lock</Th>
+                        <Th>Visible</Th>
+                        <Th>Movable</Th>
+                        <Th>Label</Th>
+                        <Th>Delete</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {tokens.map((token: any)=>
+                        <Tr>
+                          <Td>
+                            <Checkbox onChange={()=>{
+                              lockToken(token.id,token.isLocked)
+                            }} colorScheme='red' isChecked={token.isLocked}></Checkbox>
+                          </Td>
+                          <Td>
+                            <Checkbox onChange={()=>{
+                              visibleToken(token.id,token.isVisibleForPlayers)
+                            }} colorScheme='green' isChecked={token.isVisibleForPlayers}></Checkbox>
+                          </Td>
+                          <Td>
+                            <Checkbox onChange={()=>{
+                              movableToken(token.id,token.isMovableByPlayers)
+                            }} colorScheme='yellow' isChecked={token.isMovableByPlayers}></Checkbox>
+                          </Td>
+                          <Td>
+                            <Button colorScheme='teal' size='xs' onClick={()=>{
+                              console.log("changing")
+                              let [x,y] = tokenMarkerContext.state.helper.coordinates.canvasToThree(
+                                tokenMarkerContext.state.helper.coordinates.imageToCanvas([token.x,token.x]
+                              ))
+                              tokenMarkerContext.state.set({
+                                scale: [1, 1, 1],
+                                position: [-x, -y, 0],
+                              })
+                            }}>
+                              {token.label}
+                            </Button>
+                          </Td>
+                          <Td>
+                          <IconButton
+                            colorScheme='red'
+                            aria-label='Search database'
+                            icon={<DeleteIcon/>}
+                            onClick={()=>{
+                              deleteToken(token.id)
+                            }}
+                          />
+                          </Td>
+                        </Tr>
+                        )}
+                      </Tbody>
+                    </Table>
+                  </TableContainer>
+                  <br/>
+                  <br/>
+                </>}
+                
+            </VStack>
+          </>}
           </Box>
           </>
         }
@@ -571,38 +821,6 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose, setActiveToolI
         sideBarContent={ null }
       />
       </PrimeReactProvider>
-    // <Modal onClickOutside={onClose} onPressEscape={onClose}>
-    //   <Content
-    //     onClick={(ev) => ev.stopPropagation()}
-    //     tabIndex={1}
-    //     style={{ maxWidth: 300 }}
-    //   >
-    //     <Modal.Header>
-    //       <Modal.Heading2>
-    //         <Icon.Image boxSize="28px" /> Media Library
-    //       </Modal.Heading2>
-    //       <div style={{ flex: 1, textAlign: "right" }}>
-    //         <Button.Tertiary
-    //           tabIndex={1}
-    //           style={{ marginLeft: 8 }}
-    //           onClick={onClose}
-    //         >
-    //           Close
-    //         </Button.Tertiary>
-    //       </div>
-    //     </Modal.Header>
-    //     <Modal.Body
-    //       style={{ flex: 1, overflowY: "scroll" }}
-    //       onScroll={onScroll}
-    //     >
-          
-    //     </Modal.Body>
-    //     <Modal.Footer>
-          
-    //     </Modal.Footer>
-    //     {reactTreeNode}
-    //   </Content>
-    // </Modal>
   );
 };
 
