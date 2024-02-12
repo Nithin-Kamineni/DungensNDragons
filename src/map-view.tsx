@@ -1460,15 +1460,17 @@ const MapViewRenderer = (props: {
   }));
 
   const tokenMarkerContext = React.useContext(TokenMarkerContext);
-
-  React.useEffect(()=>{
-    tokenMarkerContext.setState((state) => ({
-      ...state,
-      // tempval: "map-view set and spring cord",
-      spring: spring,
-      set: set,
-    }))
-  },[])
+  if(tokenMarkerContext){
+    React.useEffect(()=>{
+      tokenMarkerContext.setState((state) => ({
+        ...state,
+        // tempval: "map-view set and spring cord",
+        spring: spring,
+        set: set,
+      }))
+    },[])
+  }
+  
 
 
   const moveToSubPosition = (data: mapView_MapMoveSubscriptionResponse) => {

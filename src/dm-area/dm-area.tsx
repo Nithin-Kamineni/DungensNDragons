@@ -40,7 +40,7 @@ import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import Close from "@material-ui/icons/Close";
 import { makeStyles } from "@material-ui/styles";
 import PlayerOther from "./playerOther";
-import PlayerStats from "./playerStats";
+import PlayerStats from "./dm-area-stats/playerStats";
 import { DnDCharacterStatsSheet, DnDCharacterProfileSheet, DnDCharacterSpellSheet, DnDCharacter } from 'dnd-character-sheets'
 import EditOffIcon from '@mui/icons-material/EditOff';
 
@@ -474,28 +474,16 @@ const Content = ({
       key: 1,
       id: 1,
     },
-    {
-      key: 2,
-      id: 2,
-    },
-    {
-      key: 3,
-      id: 3,
-    },
-    {
-      key: 4,
-      id: 4,
-    },
-    {
-      key: 5,
-      id: 5,
-    },
   ]);
 
-  const [bodyComponent, setBodyComponent] = React.useState<IHash>({ 0: "Game Map", 1: "Player Stats", 2: "Players Dashboard", 3: "Player Stats Sheet", 4: "Players Spells Sheet", 5: "Players Profile Sheet" });
+  const [bodyComponent, setBodyComponent] = React.useState<IHash>({ 0: "Game Map", 1: "Player Stats"});
 
   const [tabValue, setTabValue] = React.useState(0);
   const handleTabChange = (_event: React.ChangeEvent<{}>, value: number) => {
+    if(value===1){
+      // history.push('/dm');
+      window.location.replace('/dm-stats');
+  }
     setTabValue(value);
   };
 
@@ -863,12 +851,21 @@ const Content = ({
   );
 };
 
+import { getUrlPrefix, buildUrl } from "../public-url";
+import { DmAreaStats } from "./dm-area-stats/dm-area-stats"
 const DmAreaRenderer = ({
   password,
 }: {
   password: string;
 }): React.ReactElement => {
   const socket = useSocket();
+  let component = null;
+  const pathname = window.location.pathname.replace(getUrlPrefix(), "");
+  if(pathname=="/dm"){
+    component = <Content socket={socket} password={password} />
+  } else {
+      component = <DmAreaStats />;
+  }
 
   return (
     <AccessTokenProvider value={password}>
@@ -878,7 +875,8 @@ const DmAreaRenderer = ({
         isMapOnly={false}
         role="DM"
       >
-        <Content socket={socket} password={password} />
+        {/* <Content socket={socket} password={password} /> */}
+        {component}
       </AuthenticatedAppShell>
     </AccessTokenProvider>
   );

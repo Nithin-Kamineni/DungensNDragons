@@ -66,6 +66,7 @@ import { Input } from '@chakra-ui/react'
 import DnDCharacterDB from "./dm-area/playerDBschema"
 import ApiCallComponent from "./request/ApiCallComponent";
 // import { SlLogin } from "react-icons/sl";
+import {playerArea_userStatsStatusQuery} from "./__generated__/playerArea_userStatsStatusQuery.graphql"
 
 
 interface IHash {
@@ -138,6 +139,11 @@ const MapPingMutation = graphql`
   }
 `;
 
+const UserStatsStatusQuery = graphql`
+query playerArea_userStatsStatusQuery @live{
+  userStatsStatus
+}`
+
 const playerTools: Array<ToolMapRecord> = [
   {
     name: "Move",
@@ -184,6 +190,10 @@ const PlayerMap = ({
   const handleTabChange = (_event: React.ChangeEvent<{}>, value: number) => {
     setTabValue(value);
   };
+  
+  const [loggedIn, setLoggedIn] = React.useState(false);
+  const [userName, setUserName] = React.useState("");
+  const [editStatus, setEditStatus] = React.useState(false);
 
   async function loadStatusInit () {
     let currStatus = await ApiCallComponent({requestType:"POST", apiPath:"/api/player/status/check", body:{userID: userName}});
@@ -200,9 +210,7 @@ const PlayerMap = ({
     }
   }
 
-  const [editStatus, setEditStatus] = React.useState(loadStatusInit());
-  const [loggedIn, setLoggedIn] = React.useState(false);
-  const [userName, setUserName] = React.useState("");
+  
   
   // setInterval(() => {
   //   loadStatus()
@@ -464,6 +472,23 @@ const PlayerMap = ({
       },
     }
   );
+
+  // const status = useQuery<authenticatedAppShell_userStatsStatusQuery>(
+    const status = useQuery<playerArea_userStatsStatusQuery>(
+    UserStatsStatusQuery
+  );
+
+  React.useEffect(()=>{
+    if(status.error || status.data?.userStatsStatus){
+      setEditStatus(false);
+    } else {
+      setEditStatus(true);
+    }
+  },[status])
+  
+
+  console.log("player main status", status.data?.userStatsStatus)
+
   const noteWindowActions = useNoteWindowActions();
   return (
     <>

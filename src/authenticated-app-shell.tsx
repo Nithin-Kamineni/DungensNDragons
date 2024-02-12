@@ -22,6 +22,9 @@ import type { SpringValue } from "react-spring";
 import { useWindowDimensions } from "./hooks/use-window-dimensions";
 import { SplashShareImage } from "./splash-share-image";
 import { usePersistedState } from "./hooks/use-persisted-state";
+import { useQuery } from "relay-hooks";
+import graphql from "babel-plugin-relay/macro";
+import { authenticatedAppShell_userStatsStatusQuery } from "./__generated__/authenticatedAppShell_userStatsStatusQuery.graphql";
 
 const useShowChatState = () =>
   usePersistedState<"show" | "hidden">("chat.state", {
@@ -39,6 +42,20 @@ const useShowChatState = () =>
 
 const useShowDiceRollNotesState = () =>
   usePersistedState<"show" | "hidden">("chat.showDiceRollNotes", {
+    encode: (value) => value,
+    decode: (value) => {
+      if (
+        typeof value !== "string" ||
+        ["show", "hidden"].includes(value) === false
+      ) {
+        return "hidden";
+      }
+      return value as "show" | "hidden";
+    },
+  });
+
+  const useShowInitiativeRollState = () =>
+  usePersistedState<"show" | "hidden">("chat.showInitiativeRoll", {
     encode: (value) => value,
     decode: (value) => {
       if (
@@ -86,17 +103,71 @@ const useChatWidth = () => {
   return chatWidth;
 };
 
+const UserStatsStatusQuery:any = graphql`
+query authenticatedAppShell_userStatsStatusQuery @live{
+  userStatsStatus
+}`
+
+import { getUrlPrefix, buildUrl } from "./public-url";
+
 const AuthenticatedAppShellRenderer: React.FC<{ isMapOnly: boolean }> = ({
   isMapOnly,
   children,
 }) => {
   const [chatState, setShowChatState] = useShowChatState();
+  
   const [diceRollNotesState, setDiceRollNotesState] =
     useShowDiceRollNotesState();
+
+  const [initiativeRollNotesState, setInitiativeRollState] =
+    useShowInitiativeRollState();
 
   const toggleShowDiceRollNotes = React.useCallback(() => {
     setDiceRollNotesState((state) => (state === "show" ? "hidden" : "show"));
   }, []);
+
+  const toggleShowInitiativeRoll = React.useCallback(() => {
+    setInitiativeRollState((state) => (state === "show" ? "hidden" : "show"));
+  }, []);
+
+  const [disableRollInv, setDisableRollInv] = React.useState(true);
+
+  const status = useQuery<authenticatedAppShell_userStatsStatusQuery>(
+    UserStatsStatusQuery
+  );
+
+  console.log("auth status", status.data?.userStatsStatus)
+
+  var [flagStatus,setFlagStatus] = React.useState(false);
+
+  React.useEffect(()=>{
+    if(status.error||status.data?.userStatsStatus===false){
+      setFlagStatus(true);
+      console.log("flagStatus1",flagStatus)
+    } else {
+      setFlagStatus(false);
+      console.log("flagStatus2",flagStatus)
+    }
+  },[status])
+
+  console.log("flagStatus3",flagStatus)
+  
+  const pathname = window.location.pathname.replace(getUrlPrefix(), "");
+  // console.log("InitiativeRoll",)
+
+  React.useEffect(()=>{
+    if(!pathname.includes("dm")){
+      if(!flagStatus){
+        setDisableRollInv(false);
+        setInitiativeRollState("show")
+      } else {
+        setDisableRollInv(true);
+        setInitiativeRollState("hidden");
+      }
+    } else {
+      setDisableRollInv(false);
+    }
+  },[flagStatus])
 
   const [isLoggedIn, logIn] = useLogInMutation();
 
@@ -193,7 +264,7 @@ const AuthenticatedAppShellRenderer: React.FC<{ isMapOnly: boolean }> = ({
                   />
                 </IconContainer>
                 <Aside width={chatWidth}>
-                  <Chat toggleShowDiceRollNotes={toggleShowDiceRollNotes} />
+                  <Chat toggleShowDiceRollNotes={toggleShowDiceRollNotes} toggleShowInitiativeRoll={toggleShowInitiativeRoll} disableRollInv={disableRollInv}/>
                 </Aside>
               </animated.div>
             </React.Fragment>
@@ -208,6 +279,11 @@ const AuthenticatedAppShellRenderer: React.FC<{ isMapOnly: boolean }> = ({
             {diceRollNotesState === "show" ? (
               <React.Suspense fallback={null}>
                 <DiceRollNotes close={toggleShowDiceRollNotes} />
+              </React.Suspense>
+            ) : null}
+            {initiativeRollNotesState === "show" ? (
+              <React.Suspense fallback={null}>
+                <InitiativeRoll close={toggleShowInitiativeRoll} />
               </React.Suspense>
             ) : null}
             {showSettings ? (
@@ -232,6 +308,12 @@ export const ChatPositionContext = React.createContext<{
 const DiceRollNotes = React.lazy(() =>
   import("./chat/dice-roll-notes").then((mod) => ({
     default: mod.DiceRollNotes,
+  }))
+);
+
+const InitiativeRoll = React.lazy(() =>
+  import("./chat/dice-roll-notes").then((mod) => ({
+    default: mod.InitiativeRoll,
   }))
 );
 
@@ -295,24 +377,24 @@ export const AuthenticatedAppShell: React.FC<{
       authenticate();
     }
 
-    const tabId = String(
-      parseInt(localStorage.getItem("app.tabId") || "0", 10) + 1
-    );
-    localStorage.setItem("app.tabId", tabId);
-    localStorage.setItem("app.activeTabId", tabId);
+    // const tabId = String(
+    //   parseInt(localStorage.getItem("app.tabId") || "0", 10) + 1
+    // );
+    // localStorage.setItem("app.tabId", tabId);
+    // localStorage.setItem("app.activeTabId", tabId);
 
-    window.addEventListener("storage", (ev) => {
-      if (ev.key === "app.activeTabId" && ev.newValue !== tabId) {
-        socket.disconnect();
-      }
-    });
+    // window.addEventListener("storage", (ev) => {
+    //   if (ev.key === "app.activeTabId" && ev.newValue !== tabId) {
+    //     socket.disconnect();
+    //   }
+    // });
 
-    window.addEventListener("focus", () => {
-      localStorage.setItem("app.activeTabId", tabId);
-      if (!socket.connected) {
-        socket.connect();
-      }
-    });
+    // window.addEventListener("focus", () => {
+    //   localStorage.setItem("app.activeTabId", tabId);
+    //   if (!socket.connected) {
+    //     socket.connect();
+    //   }
+    // });
 
     return () => {
       socket.off("connect");

@@ -23,6 +23,7 @@ import { createTokenImageUploadRegister } from "../token-image-lib";
 import type { Maps } from "../maps";
 import { createMapImageUploadRegister } from "../map-lib";
 import type { Settings } from "../settings";
+import type { Users } from "../user-status";
 
 type MaybePromise<T> = Promise<T> | T;
 
@@ -34,6 +35,7 @@ type Dependencies = {
   fileStoragePath: string;
   publicUrl: string;
   maps: Maps;
+  users: Users;
   settings: Settings;
   emitter: EventEmitter;
 };
@@ -45,6 +47,7 @@ export default ({
   fileStoragePath,
   publicUrl,
   maps,
+  users,
   settings,
   emitter,
 }: Dependencies) => {
@@ -137,6 +140,7 @@ export default ({
         tokenImageUploadRegister,
         publicUrl,
         maps,
+        users,
         mapImageUploadRegister,
         settings,
       };

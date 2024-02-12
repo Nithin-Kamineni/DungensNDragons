@@ -58,17 +58,29 @@ import {
   ModalCloseButton,
 } from '@chakra-ui/react'
 
-import PlayerProfile from "./playerProfile";
-import PlayerSpell from "./playerSpell";
-import PlayerOther from "./playerOther";
+import PlayerProfile from "../playerProfile";
+import PlayerSpell from "../playerSpell";
+import PlayerOther from "../playerOther";
 import { matchRight } from "fp-ts/lib/ReadonlyNonEmptyArray";
+
+
+// const UserStatsStatusMutation = graphql`
+//   mutation encountersLib_userStatsStatusMutation(
+//       $input: UserStatusInput!
+//     ) {
+//       userStatus(input: $input)
+//     }
+// `;
 
 function PlayerCard(props) {
 
+
+  const key = props.id;
   const name = props.name;
   const summary = props.summary;
   const backstory = props.backstory;
   const character = props.character;
+  const userStatsStatusChnageFunc = props.userStatsStatusChnageFunc;
 
   const maxHp = character.maxHp;
   const hp = character.hp;
@@ -92,9 +104,21 @@ function PlayerCard(props) {
     onOpen();
   }
 
+  // const [userStatsStatusChnageFunc] =
+  //   useMutation<any>(
+  //     UserStatsStatusMutation
+  //   );
+
   const [lockedStatus,SetLockedStatus] = React.useState(false);
   const handleLockedStatus = () => {
     SetLockedStatus(!lockedStatus);
+    userStatsStatusChnageFunc({
+      variables: {
+        input: {
+          status: !lockedStatus,
+        },
+      },
+    });
   }
 
   const OverlayTwo = () => (
@@ -181,12 +205,12 @@ function PlayerCard(props) {
               </DrawerContent>
             </Drawer  >}
 
-            <FormControl display='flex' alignItems='center'>
-              <Switch id={'email-alerts'+props.id} 
+            <FormControl display='flex' alignItems='center' key={key}>
+              <Switch 
               style={{marginRight:"30px"}} 
               onChange={handleLockedStatus}
               />
-              <FormLabel htmlFor={'email-alerts'+props.id} mb='4'>
+              <FormLabel mb='4'>
               {lockedStatus ? <LockIcon/> : <UnlockIcon />}
               </FormLabel>
             </FormControl>

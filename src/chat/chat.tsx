@@ -2,7 +2,7 @@ import * as React from "react";
 import graphql from "babel-plugin-relay/macro";
 import { useQuery, useSubscription } from "relay-hooks";
 import { ConnectionHandler } from "relay-runtime";
-import { Stack } from "@chakra-ui/react";
+import { HStack, Stack } from "@chakra-ui/react";
 import { ChatUserList } from "./chat-user-list";
 import { ChatMessages } from "./chat-messages";
 import { ChatSettings } from "./chat-settings";
@@ -172,7 +172,9 @@ export const useChatSoundsAndUnreadCount = (
 
 export const Chat: React.FC<{
   toggleShowDiceRollNotes: () => void;
-}> = React.memo(({ toggleShowDiceRollNotes }) => {
+  toggleShowInitiativeRoll: () => void;
+  disableRollInv: Boolean;
+}> = React.memo(({ toggleShowDiceRollNotes,toggleShowInitiativeRoll, disableRollInv }) => {
   const [mode, setMode] = React.useState<"chat" | "user" | "settings">("chat");
 
   useSubscription<chatSubscription>(
@@ -293,13 +295,25 @@ export const Chat: React.FC<{
         <Stack height="100%">
           <ChatMessages chat={data} />
           <ChatTextArea />
-          <Button.Tertiary
-            small
-            onClick={toggleShowDiceRollNotes}
-            style={{ marginTop: 8 }}
-          >
-            <Icon.Dice boxSize="16px" /> <span> Dice Roll Notes</span>
-          </Button.Tertiary>
+          <HStack>
+            <Button.Tertiary
+              small
+              onClick={toggleShowDiceRollNotes}
+              style={{ marginTop: 8 }}
+            >
+              <Icon.Dice boxSize="16px" /> <span> Dice Roll Notes</span>
+            </Button.Tertiary>
+            <Button.Tertiary
+              small
+              onClick={toggleShowInitiativeRoll}
+              style={{ marginTop: 8 }}
+
+              disabled={disableRollInv}
+              notification
+            >
+              <Icon.D20Dice boxSize="16px" /> <span> Inittiative Roll</span>
+            </Button.Tertiary>
+          </HStack>
         </Stack>
       ) : mode === "user" ? (
         <div style={{ marginTop: 16 }}>

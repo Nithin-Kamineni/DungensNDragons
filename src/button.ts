@@ -60,12 +60,28 @@ export const Secondary = styled(ButtonBase)`
 export const Tertiary = styled(ButtonBase)<
   ButtonBaseProps & {
     danger?: boolean;
+    notification?: boolean;
   }
 >`
   background-color: transparent;
   color: ${(p) =>
     p.disabled ? lighten(0.3, "#627d98") : p.danger ? "#f44336" : "#627d98"};
   cursor: ${(p) => (p.disabled ? "inherit" : null)};
+
+  /* Notification badge style */
+  position: relative;
+  
+  &:after {
+    content: "";
+    display: ${(p) => p.notification ? "block" : "none"};
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 12px;
+    height: 12px;
+    background-color: #f44336;
+    border-radius: 50%;
+  }
 
   &:hover {
     background-color: ${(p) => (p.disabled ? null : "#f0f4f8")};

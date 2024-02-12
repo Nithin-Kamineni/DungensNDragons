@@ -25,6 +25,7 @@ import type {
   Request,
 } from "express-serve-static-core";
 import cors from "cors";
+import { Users } from "./user-status";
 
 type RequestWithRole = Request & { role: string | null };
 type ErrorWithStatus = Error & { status: number };
@@ -49,6 +50,11 @@ export const bootstrapServer = async (env: ReturnType<typeof getEnv>) => {
   const processTask = createResourceTaskProcessor();
 
   const maps = new Maps({ processTask, dataDirectory: env.DATA_DIRECTORY });
+
+  const users = new Users({processTask, databaseConection:"testdbpath"})
+
+  console.log("here is the change", users.getUserStatus());
+
   const settings = new Settings({ dataDirectory: env.DATA_DIRECTORY });
   const fileStorage = new FileStorage({
     dataDirectory: env.DATA_DIRECTORY,
@@ -232,6 +238,7 @@ export const bootstrapServer = async (env: ReturnType<typeof getEnv>) => {
     fileStoragePath: path.join(env.DATA_DIRECTORY, "files"),
     publicUrl: env.PUBLIC_URL,
     maps,
+    users,
     settings,
     emitter,
   });

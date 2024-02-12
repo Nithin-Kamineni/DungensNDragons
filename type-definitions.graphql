@@ -129,6 +129,7 @@ type Query {
   sharedSplashImage: Image
   users(first: Int, after: ID): ConnectedUserConnection!
   usersCount: Int!
+  userStatsStatus: Boolean!
   me: User!
   notes(first: Int, after: String, filter: NotesFilter): NoteConnection!
   notesSearch(first: Int, after: String, query: String): NoteSearchConnection!
@@ -365,6 +366,7 @@ type Mutation {
   tokenImageCreate(input: TokenImageCreateInput!): TokenImageCreateResult!
   mapTokenUpdateMany(input: MapTokenUpdateManyInput!): Boolean
   mapTokenRemoveMany(input: MapTokenRemoveManyInput!): Boolean
+  userStatus(input: UserStatusInput!): Boolean
 
   """
   Add token to a map
@@ -613,6 +615,13 @@ input MapTokenRemoveManyInput {
   The ids of the token that should be removed.
   """
   tokenIds: [ID!]!
+}
+
+input UserStatusInput {
+  """
+  The id of the map the token belong to.
+  """
+  status: Boolean!
 }
 
 input MapTokenAddManyInput {

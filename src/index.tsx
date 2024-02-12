@@ -33,11 +33,23 @@ document.body.addEventListener("keyup", (ev) => {
 const pathname = window.location.pathname.replace(getUrlPrefix(), "");
 
 const urlSearchParameter = new URLSearchParams(window.location.search);
-
+console.log("Pathname:",pathname)
 const main = async () => {
   let component = null;
   switch (pathname) {
     case "/dm": {
+      const { DmArea } = await import("./dm-area/dm-area");
+      component = <DmArea />;
+      break;
+    }
+    case "/dm1": {
+      const { DmArea } = await import("./dm-area/dm-area");
+      component = <DmArea />;
+      break;
+    }
+    case "/dm-stats": {
+      // const { DmAreaStats } = await import("./dm-area/dm-area-stats/dm-area-stats");
+      // component = <DmAreaStats />;
       const { DmArea } = await import("./dm-area/dm-area");
       component = <DmArea />;
       break;

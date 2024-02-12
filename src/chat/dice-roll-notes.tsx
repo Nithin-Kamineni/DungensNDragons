@@ -9,6 +9,20 @@ import debounce from "lodash/debounce";
 import { useStaticRef } from "../hooks/use-static-ref";
 import { DraggableWindow, SetWidthHandler } from "../draggable-window";
 import { usePersistedState } from "../hooks/use-persisted-state";
+import { ChatMessageButton } from "../dm-area/components/chat-message-button";
+import { InitiativeInputContainer } from "../dm-area/components/initiative-input-container";
+import {
+  Table,
+  Thead,
+  Tbody,
+  Tfoot,
+  Tr,
+  Th,
+  Td,
+  TableCaption,
+  TableContainer,
+  Center
+} from '@chakra-ui/react'
 
 const WindowContent = styled.div`
   overflow-y: scroll;
@@ -69,6 +83,10 @@ Here are some more examples:
  <ChatMacro message="Magic Missle [(1d4 + 1) * 4]">2nd level</ChatMacro> 
  <ChatMacro message="Magic Missle [(1d4 + 1) * 5]">3rd level</ChatMacro>
 
+ <Checkbox>Added proficiency and other bonuses</Checkbox>
+ <InitiativeInputContainer/>
+    
+ <ChatMacro message="Roll Initiative [20 + 5]">Type Initiative</ChatMacro>
 <ChatMacro message="Roll Initiative [1d20 + 5]">Roll Initiative</ChatMacro>
 
 <ChatMacro message="Climb [1d20 + 5][1d20 + 5][1d20 + 5]">Skill Check (DSA)</ChatMacro>
@@ -206,6 +224,114 @@ export const DiceRollNotes: React.FC<{ close: () => void }> = ({ close }) => {
           <Box flex="1">
             <WindowContent>
               <HtmlContainer markdown={content} />
+            </WindowContent>
+          </Box>
+        </Flex>
+      }
+      close={close}
+      onKeyDown={(ev) => {
+        ev.stopPropagation();
+        if (ev.key !== "Escape") return;
+        if (mode === "read") close();
+      }}
+      onDidResize={() => {
+        editorOnResizeRef.current?.();
+      }}
+    />
+  );
+};
+
+import { getUrlPrefix, buildUrl } from "../public-url";
+
+export const InitiativeRoll: React.FC<{ close: () => void }> = ({ close }) => {
+
+  const pathname = window.location.pathname.replace(getUrlPrefix(), "");
+  console.log("InitiativeRoll",pathname.includes("dm"))
+
+  const [mode, setMode] = React.useState<"read" | "write">("read");
+  const editorRef =
+    React.useRef<monacoEditor.editor.IStandaloneCodeEditor | null>(null);
+  const [content, _setContent] = usePersitedDiceNotesValue();
+  const setContent = useStaticRef(() => debounce(_setContent, 200));
+  const editorOnResizeRef = React.useRef(null as null | (() => void));
+  const setWidthRef = React.useRef<SetWidthHandler | null>(null);
+
+  React.useLayoutEffect(() => {
+    if (mode === "read") {
+      setWidthRef.current?.((value) => Math.max(value / 2, 500));
+    } else {
+      setWidthRef.current?.((value) => value * 2);
+    }
+  }, [mode]);
+
+  return (
+    <DraggableWindow
+      setWidthRef={setWidthRef}
+      headerContent={
+        <>
+          <div style={{ fontWeight: "bold" }}>Inittiative Roll</div>
+        </>
+      }
+      // options={[
+      //   {
+      //     onClick: () =>
+      //       setMode((mode) => (mode === "read" ? "write" : "read")),
+      //     title: mode === "read" ? "Edit" : "Save",
+      //     icon:
+      //       mode === "read" ? (
+      //         <Icon.Edit boxSize="16px" />
+      //       ) : (
+      //         <Icon.Save boxSize="16px" />
+      //       ),
+      //   },
+      // ]}
+      bodyContent={
+        <Flex maxHeight="100%" height="100%">
+          <Box flex="1">
+            <WindowContent>
+            {pathname.includes("dm") ? 
+              <>
+              </>
+              : 
+              <>
+                <Center>
+                  <InitiativeInputContainer/>
+                </Center>
+
+                {/* Add option to see NPC's innitiative too in the table */}
+
+                <TableContainer>
+                  <Table variant='simple'>
+                    <TableCaption>Initiative order</TableCaption>
+                    <Thead>
+                      <Tr>
+                        <Th>Player</Th>
+                        <Th isNumeric>Initiative</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      <Tr>
+                        <Td>Niky</Td>
+                        <Td isNumeric>25</Td>
+                      </Tr>
+                      <Tr>
+                        <Td>feet</Td>
+                        <Td isNumeric>30</Td>
+                      </Tr>
+                      <Tr>
+                        <Td>Rogger</Td>
+                        <Td isNumeric>5</Td>
+                      </Tr>
+                    </Tbody>
+                    <Tfoot>
+                      <Tr>
+                        <Th>danny</Th>
+                        <Th isNumeric>multiply by</Th>
+                      </Tr>
+                    </Tfoot>
+                  </Table>
+                </TableContainer>
+              </>}
             </WindowContent>
           </Box>
         </Flex>

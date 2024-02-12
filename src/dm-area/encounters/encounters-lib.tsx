@@ -119,6 +119,27 @@ query encountersLib_allTokenImagesQuery {
   }
 }`
 
+const UserStatsStatusQuery:any = graphql`
+query encountersLib_userStatsStatusQuery @live{
+  userStatsStatus
+}`
+
+// const MapContextMenuRendererMapTokenRemoveManyMutation = graphql`
+//   mutation mapContextMenuRendererMapTokenRemoveManyMutation(
+//     $input: MapTokenRemoveManyInput!
+//   ) {
+//     mapTokenRemoveMany(input: $input)
+//   }
+// `;
+
+const UserStatsStatusMutation = graphql`
+  mutation encountersLib_userStatsStatusMutation(
+      $input: UserStatusInput!
+    ) {
+      userStatus(input: $input)
+    }
+`;
+
 // const GET_Image = gql`
 // query getAllTokenImage {
 //   allTokenImages {
@@ -133,14 +154,14 @@ query encountersLib_allTokenImagesQuery {
 // }
 // `;
 
-const SplashShareImage_SplashShareImageQuery:any = graphql`
-  query encountersLib_splashShareImageSharedSplashImageQuery @live {
-    sharedSplashImage {
-      id
-      url
-    }
-  }
-`;
+// const SplashShareImage_SplashShareImageQuery:any = graphql`
+//   query encountersLib_splashShareImageSharedSplashImageQuery @live {
+//     sharedSplashImage {
+//       id
+//       url
+//     }
+//   }
+// `;
 
 const TokenMarkerSettings = (props:{setActiveToolId: any}): React.ReactElement => {
   const tokenMarkerContext = React.useContext(TokenMarkerContext);
@@ -359,6 +380,33 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose, setActiveToolI
   console.log("maps tokens now:")
   
   console.log(map)
+
+  // const [mapTokenDeleteMany] =
+  //   useMutation<mapContextMenuRendererMapTokenRemoveManyMutation>(
+  //     MapContextMenuRendererMapTokenRemoveManyMutation
+  //   );
+
+  //   mapTokenDeleteMany({
+  //     variables: {
+  //       input: {
+  //         mapId: map.id,
+  //         tokenIds: Array.from(selectedItems.keys()),
+  //       },
+  //     },
+  //   });
+
+  // const [userStatsStatusChnageFunc] =
+  //   useMutation<any>(
+  //     UserStatsStatusMutation
+  //   );
+
+  
+
+  const status = useQuery<any>(
+    UserStatsStatusQuery
+  );
+
+  console.log("UserStatsStatusQuery:", status);
   
   let mapid: any;
   let tokens: any;
@@ -639,6 +687,13 @@ export const Encounter: React.FC<MediaLibraryProps> = ({ onClose, setActiveToolI
               setSelectedCities([]);
               setpagesLoaded(0);
               setBreadCrumsProcess(breadCrums.slice(0,1))
+              // userStatsStatusChnageFunc({
+              //       variables: {
+              //         input: {
+              //           status: true,
+              //         },
+              //       },
+              //     });
             }}/>
           </HStack>
           </>

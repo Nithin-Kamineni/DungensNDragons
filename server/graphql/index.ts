@@ -13,6 +13,7 @@ import type { InMemoryLiveQueryStore } from "@n1ru4l/in-memory-live-query-store"
 import { GraphQLLiveDirective } from "@n1ru4l/graphql-live-query";
 import type { SplashImageState } from "../splash-image-state";
 import type { Maps } from "../maps";
+import type { Users } from "../user-status";
 import type { Settings } from "../settings";
 
 export type PubSubConfig = MapPubSubConfig &
@@ -35,6 +36,7 @@ export type GraphQLContextType = {
   mapImageUploadRegister: MapImageUploadRegister;
   fileStoragePath: string;
   maps: Maps;
+  users: Users;
   settings: Settings;
 };
 
@@ -44,6 +46,7 @@ import { specifiedDirectives } from "graphql";
 import * as RelaySpecModule from "./modules/relay-spec";
 import * as DiceRollerChatModule from "./modules/dice-roller-chat";
 import * as UserModule from "./modules/user";
+import * as UserStatsModule from "./modules/userStats";
 import * as NotesModule from "./modules/notes";
 import * as TokenImageModule from "./modules/token-image";
 import * as MapModule from "./modules/map";
@@ -84,6 +87,7 @@ const Query = t.queryType({
   fields: () => [
     ...DiceRollerChatModule.queryFields,
     ...UserModule.queryFields,
+    ...UserStatsModule.queryFields,
     ...NotesModule.queryFields,
     ...TokenImageModule.queryFields,
     ...MapModule.queryFields,
@@ -94,6 +98,7 @@ const Query = t.queryType({
 const Subscription = t.subscriptionType({
   fields: () => [
     ...UserModule.subscriptionFields,
+    ...UserStatsModule.subscriptionFields,
     ...DiceRollerChatModule.subscriptionFields,
     ...NotesModule.subscriptionFields,
     ...TokenImageModule.subscriptionsFields,
@@ -104,6 +109,7 @@ const Subscription = t.subscriptionType({
 const Mutation = t.mutationType({
   fields: () => [
     ...UserModule.mutationFields,
+    ...UserStatsModule.mutationFields,
     ...DiceRollerChatModule.mutationFields,
     ...NotesModule.mutationFields,
     ...TokenImageModule.mutationFields,

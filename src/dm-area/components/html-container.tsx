@@ -24,6 +24,7 @@ import { ChatMessageButton } from "./chat-message-button";
 import { randomHash } from "../../utilities/random-hash";
 import { processUserStyleSheet } from "../../utilities/process-user-style-sheet";
 import { useUserStyleSheetOrchestrator } from "../../user-style-sheet-orchestrator";
+import { InitiativeInputContainer } from "./initiative-input-container";
 
 const H1: React.FC = (props) => <Heading as="h1">{props.children}</Heading>;
 const H2: React.FC = (props) => (
@@ -56,6 +57,7 @@ const components = {
   ol: OrderedList,
   li: ListItem,
   hr: Divider,
+  InitiativeInputContainer: InitiativeInputContainer,
   p: (props: React.ComponentProps<typeof Text>) => <Text {...props} as="div" />,
 };
 
